@@ -2,6 +2,27 @@
 
 Assistente AI locale con architettura a layer separati.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<img width="1022" height="647" alt="Screenshot_20260425_175655" src="https://github.com/user-attachments/assets/01804166-a5e0-4bb0-8779-69f0a96c3bb9" />
+
+
+
 ## Struttura
 
 ```
