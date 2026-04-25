@@ -57,7 +57,7 @@ pip install -r requirements.txt
 \\ARCH LINUX:
 sudo pacman -S ollama
 
-\\KALI LINUX o altre distro
+\\KALI LINUX o altre distro:
 sudo apt install ollama
 
 # 4. Assicurati che Ollama sia in esecuzione
