@@ -47,16 +47,18 @@ jarvis-core/
 ## Setup
 
 ```bash
-# 1. Installa dipendenze Python
+# 1 Clona la repo
+git clone https://github.com/PIXELQUADRO07/Jarvis-Core
+# 2. Installa dipendenze Python
 pip install -r requirements.txt
 
-# 2. Assicurati che Ollama sia in esecuzione
+# 3. Assicurati che Ollama sia in esecuzione
 ollama serve
 
-# 3. Scarica il modello (se non l'hai già)
+# 4. Scarica il modello (se non l'hai già)
 ollama pull mistral
 
-# 4. Avvia JARVIS
+# 5. Avvia JARVIS
 python main.py
 ```
 
