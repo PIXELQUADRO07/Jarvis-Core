@@ -21,6 +21,7 @@ from typing import Generator, Any
 from core.commands import run_command
 from core.state    import set_status
 from core.llm      import stream_llm
+from core.tools.router import route_query
 
 
 # ─── UIEvent — contratto controller → UI ─────────────────────────────────────
@@ -71,11 +72,16 @@ def handle_input(raw: str) -> Generator[UIEvent, None, None]:
                 yield UIEvent("system_msg", f"Azione non gestita: {action}")
         return
 
-    # ── Flusso AI (streaming token per token) ─────────────────────────────────
+    # ── Flusso AI / tools ─────────────────────────────────────────────────────
     yield UIEvent("user_msg", raw)
 
     set_status("thinking")
     try:
+        result = route_query(raw)
+        if result:
+            yield UIEvent("system_msg", result)
+            return
+
         for chunk in stream_llm(raw):
             set_status("streaming")
             yield UIEvent("ai_chunk", chunk)

@@ -268,9 +268,13 @@ def main():
                 break
             continue
 
+        should_exit = False
         for ev in itertools.chain([first], event_gen):
             if not _render_event(ev):
+                should_exit = True
                 break
+        if should_exit:
+            break
 
     console.print(Rule(style="red"))
     console.print(Align.center(Text("JARVIS OFFLINE", style=RED)))
