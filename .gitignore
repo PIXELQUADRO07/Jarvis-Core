@@ -1,3 +1,4 @@
+core/tools/cache.json
 venv/
 __pycache__/
 *.pyc
