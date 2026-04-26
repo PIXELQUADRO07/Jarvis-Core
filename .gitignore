@@ -1,7 +1,16 @@
-core/tools/cache.json
+# Virtual env
 venv/
+
+# Python cache
 __pycache__/
 *.pyc
-memory.json
-.env
+
+# OS
 .DS_Store
+
+# Env
+.env
+
+# Cache / dati runtime
+core/tools/cache.json
+core/memory.json
