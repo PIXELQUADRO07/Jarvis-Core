@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -36,7 +36,7 @@ def get(key: str, ttl: Optional[int] = DEFAULT_TTL) -> Optional[Any]:
     except ValueError:
         return None
 
-    if datetime.utcnow() - created > timedelta(seconds=ttl):
+    if datetime.now(timezone.utc) - created > timedelta(seconds=ttl):
         return None
 
     return item.get("value")
@@ -45,7 +45,7 @@ def get(key: str, ttl: Optional[int] = DEFAULT_TTL) -> Optional[Any]:
 def set_cache(key: str, value: Any) -> None:
     data = _load()
     data[key] = {
-        "ts": datetime.utcnow().isoformat(),
+        "ts": datetime.now(timezone.utc).isoformat(),
         "value": value,
     }
     _save(data)

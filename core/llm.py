@@ -5,22 +5,23 @@ from typing import Generator
 from datetime import datetime
 
 from core.memory import load_memory, save_memory
-
-OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL = "mistral"
+from config import get_config
+from logger import debug, error, warning
 
 
 def get_system_prompt() -> dict:
+    """Genera il system prompt con info temporali aggiornate"""
     now = datetime.now()
     date_str = now.strftime("%d/%m/%Y")
     time_str = now.strftime("%H:%M:%S")
     weekdays = ['lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato', 'domenica']
     day_str = weekdays[now.weekday()]
     content = (
-        f"Sei JARVIS, un assistente AI avanzato e affidabile.\n"
+        f"Ti chiami JARVIS, un assistente AI avanzato e affidabile.\n"
         f"Oggi è {day_str} {date_str}, ora attuale {time_str}.\n"
         "Istruzioni:\n"
         "- Fornisci risposte accurate, concise e utili.\n"
+        "- IMPORTANTE: Mantieni le risposte BREVI e CONCISE (max 2-3 frasi).\n"
         "- Usa gli strumenti disponibili quando necessario (meteo, Wikipedia, calcoli matematici, ecc.).\n"
         "- Se una domanda richiede calcolo, usa lo strumento matematico.\n"
         "- Per informazioni generali, consulta Wikipedia.\n"
@@ -36,27 +37,33 @@ def get_system_prompt() -> dict:
 
 
 def stream_llm(text: str) -> Generator[str, None, None]:
+    """
+    Esegue streaming della risposta LLM da Ollama.
+    Carica storia conversazione, invia richiesta, e yield token per token.
+    """
+    config = get_config()
     history = load_memory()
     history.append({"role": "user", "content": text})
 
     payload = json.dumps({
-        "model": MODEL,
+        "model": config.model,
         "messages": [get_system_prompt()] + history,
         "stream": True,
-        "options": {"temperature": 0.2}
+        "options": {"temperature": config.temperature}
     }).encode("utf-8")
 
     req = urllib.request.Request(
-        OLLAMA_URL,
+        config.ollama_url,
         data=payload,
         headers={"Content-Type": "application/json"},
         method="POST",
     )
 
     full_reply = ""
+    debug(f"Streaming LLM request to {config.ollama_url} with model {config.model}")
 
     try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        with urllib.request.urlopen(req, timeout=config.request_timeout) as resp:
             for raw_line in resp:
                 raw_line = raw_line.strip()
                 if not raw_line:
@@ -68,22 +75,42 @@ def stream_llm(text: str) -> Generator[str, None, None]:
                     continue
 
                 token = data.get("message", {}).get("content", "")
-                if token:
+                if not token:
+                    continue
+
+                if len(full_reply) + len(token) >= config.max_response_length:
+                    token = token[:config.max_response_length - len(full_reply)]
                     full_reply += token
-                    yield token
+                    if token:
+                        yield token
+                    debug(f"Response length limit reached: {len(full_reply)} chars")
+                    break
+
+                full_reply += token
+                yield token
 
                 if data.get("done"):
+                    debug(f"LLM streaming complete: {len(full_reply)} chars generated")
                     break
 
     except urllib.error.URLError as e:
+        error(f"Ollama connection error: {e.reason}")
         raise ConnectionError(f"Ollama non raggiungibile: {e.reason}") from e
 
-    except TimeoutError:
-        raise TimeoutError("Timeout Ollama")
+    except urllib.error.HTTPError as e:
+        error(f"Ollama HTTP error: {e.code}")
+        raise ConnectionError(f"Ollama error: HTTP {e.code}") from e
+
+    except TimeoutError as e:
+        error("Ollama timeout")
+        raise TimeoutError("Timeout Ollama") from e
 
     except Exception as e:
+        error(f"Unexpected error in stream_llm: {e}")
         raise RuntimeError(str(e)) from e
 
     if full_reply:
         history.append({"role": "assistant", "content": full_reply})
         save_memory(history)
+    else:
+        warning("Empty response received from LLM")

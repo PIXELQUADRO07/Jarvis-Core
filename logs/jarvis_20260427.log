@@ -1,0 +1,209 @@
+2026-04-27 01:46:06 - jarvis - DEBUG - Routing query: 2 + 3...
+2026-04-27 01:48:37 - jarvis - INFO - JARVIS starting...
+2026-04-27 01:48:37 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 01:48:37 - jarvis - INFO - Model: mistral
+2026-04-27 01:48:40 - jarvis - DEBUG - Routing query: ciao...
+2026-04-27 01:48:40 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model mistral
+2026-04-27 01:49:00 - jarvis - DEBUG - Memory saved: 2 messages
+2026-04-27 01:49:17 - jarvis - DEBUG - Routing query: che modello sei e cosa puoi fare ?...
+2026-04-27 01:49:17 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model mistral
+2026-04-27 01:49:42 - jarvis - DEBUG - Memory saved: 4 messages
+2026-04-27 01:50:00 - jarvis - DEBUG - Routing query: bene, controlla quante cpu ho ?...
+2026-04-27 01:50:07 - jarvis - DEBUG - Routing query: invece la ram?...
+2026-04-27 01:50:16 - jarvis - DEBUG - Routing query: grazie...
+2026-04-27 01:50:16 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model mistral
+2026-04-27 01:50:47 - jarvis - DEBUG - Memory saved: 6 messages
+2026-04-27 08:03:07 - jarvis - INFO - JARVIS starting...
+2026-04-27 08:03:07 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 08:03:07 - jarvis - INFO - Model: mistral
+2026-04-27 08:03:16 - jarvis - DEBUG - Routing query: ciao jarvis...
+2026-04-27 08:03:16 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model mistral
+2026-04-27 08:03:54 - jarvis - DEBUG - Memory saved: 8 messages
+2026-04-27 08:06:22 - jarvis - DEBUG - Routing query: che disro ho?...
+2026-04-27 08:06:22 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model mistral
+2026-04-27 08:06:39 - jarvis - DEBUG - Memory saved: 10 messages
+2026-04-27 08:06:52 - jarvis - DEBUG - Routing query: che distro ho ?...
+2026-04-27 14:07:45 - jarvis - INFO - JARVIS starting...
+2026-04-27 14:07:45 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 14:07:45 - jarvis - INFO - Model: qwen2.5:7b
+2026-04-27 14:07:52 - jarvis - DEBUG - Routing query: ciao, come ti chiami...
+2026-04-27 14:07:52 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 14:08:30 - jarvis - DEBUG - Memory saved: 12 messages
+2026-04-27 14:08:37 - jarvis - DEBUG - Routing query: che modello sei?...
+2026-04-27 14:08:37 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 14:09:13 - jarvis - DEBUG - Memory saved: 14 messages
+2026-04-27 14:11:11 - jarvis - DEBUG - Routing query: sistema...
+2026-04-27 14:11:11 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 14:11:13 - jarvis - INFO - JARVIS interrupted by user
+2026-04-27 14:41:37 - jarvis - DEBUG - Sintesi vocale: 'Ciao! Questa è una prova della sintesi vocale di J...'
+2026-04-27 14:41:42 - jarvis - DEBUG - Audio riprodotto con: paplay /tmp/tmpp8s0g6wl.wav
+2026-04-27 14:42:24 - jarvis - INFO - JARVIS starting...
+2026-04-27 14:42:24 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 14:42:24 - jarvis - INFO - Model: qwen2.5:7b
+2026-04-27 14:42:27 - jarvis - DEBUG - Routing query: ciao...
+2026-04-27 14:42:27 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 14:43:06 - jarvis - DEBUG - Memory saved: 16 messages
+2026-04-27 14:44:37 - jarvis - DEBUG - Sintesi vocale: 'Ciao, questo è un test della sintesi vocale....'
+2026-04-27 14:44:37 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmphvm1l9d4.wav
+2026-04-27 14:44:39 - jarvis - DEBUG - File audio creato: /tmp/tmphvm1l9d4.wav
+2026-04-27 14:44:39 - jarvis - DEBUG - Provo player: paplay /tmp/tmphvm1l9d4.wav
+2026-04-27 14:44:42 - jarvis - DEBUG - Audio riprodotto con: paplay /tmp/tmphvm1l9d4.wav
+2026-04-27 14:44:42 - jarvis - DEBUG - File temporaneo eliminato
+2026-04-27 14:44:56 - jarvis - INFO - JARVIS starting...
+2026-04-27 14:44:56 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 14:44:56 - jarvis - INFO - Model: qwen2.5:7b
+2026-04-27 14:45:31 - jarvis - DEBUG - Sintesi vocale: 'Ciao, questo è un test con aplay come player prima...'
+2026-04-27 14:45:31 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmp_a7niqk6.wav
+2026-04-27 14:45:32 - jarvis - DEBUG - File audio creato: /tmp/tmp_a7niqk6.wav
+2026-04-27 14:45:32 - jarvis - DEBUG - Provo player: aplay /tmp/tmp_a7niqk6.wav
+2026-04-27 14:45:35 - jarvis - DEBUG - Audio riprodotto con: aplay /tmp/tmp_a7niqk6.wav
+2026-04-27 14:45:35 - jarvis - DEBUG - File temporaneo eliminato
+2026-04-27 14:46:12 - jarvis - DEBUG - Sintesi vocale: 'Ciao! Questa è una prova delle modifiche alla sint...'
+2026-04-27 14:46:12 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmp8kn2m7p2.wav
+2026-04-27 14:46:14 - jarvis - DEBUG - File audio creato: /tmp/tmp8kn2m7p2.wav
+2026-04-27 14:46:14 - jarvis - DEBUG - Ambiente headless: False
+2026-04-27 14:46:14 - jarvis - DEBUG - Provo player: aplay /tmp/tmp8kn2m7p2.wav
+2026-04-27 14:46:18 - jarvis - DEBUG - Audio riprodotto con: aplay /tmp/tmp8kn2m7p2.wav
+2026-04-27 14:46:18 - jarvis - DEBUG - File temporaneo eliminato
+2026-04-27 14:46:27 - jarvis - DEBUG - Routing query: ciao...
+2026-04-27 14:46:38 - jarvis - DEBUG - Sintesi vocale: 'Ciao! Come posso aiutarti oggi?...'
+2026-04-27 14:46:38 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmpzp_uswq3.wav
+2026-04-27 14:46:39 - jarvis - DEBUG - File audio creato: /tmp/tmpzp_uswq3.wav
+2026-04-27 14:46:39 - jarvis - DEBUG - Ambiente headless: False
+2026-04-27 14:46:39 - jarvis - DEBUG - Provo player: aplay /tmp/tmpzp_uswq3.wav
+2026-04-27 14:46:42 - jarvis - DEBUG - Audio riprodotto con: aplay /tmp/tmpzp_uswq3.wav
+2026-04-27 14:46:42 - jarvis - DEBUG - File temporaneo eliminato
+2026-04-27 14:47:00 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 14:47:39 - jarvis - DEBUG - Memory saved: 18 messages
+2026-04-27 14:47:40 - jarvis - DEBUG - Sintesi vocale: 'Ciao! Come posso aiutarti oggi?...'
+2026-04-27 14:47:40 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmparlvu93r.wav
+2026-04-27 14:47:41 - jarvis - DEBUG - File audio creato: /tmp/tmparlvu93r.wav
+2026-04-27 14:47:41 - jarvis - DEBUG - Ambiente headless: False
+2026-04-27 14:47:41 - jarvis - DEBUG - Provo player: aplay /tmp/tmparlvu93r.wav
+2026-04-27 14:47:43 - jarvis - DEBUG - Audio riprodotto con: aplay /tmp/tmparlvu93r.wav
+2026-04-27 14:47:43 - jarvis - DEBUG - File temporaneo eliminato
+2026-04-27 14:49:01 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 14:49:16 - jarvis - DEBUG - Sintesi vocale: 'Test di integrazione vocale completata....'
+2026-04-27 14:49:16 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmpuxp_4p5j.wav
+2026-04-27 14:49:19 - jarvis - DEBUG - File audio creato: /tmp/tmpuxp_4p5j.wav
+2026-04-27 14:49:19 - jarvis - DEBUG - Ambiente headless: False
+2026-04-27 14:49:19 - jarvis - DEBUG - Provo player: aplay /tmp/tmpuxp_4p5j.wav
+2026-04-27 14:49:21 - jarvis - DEBUG - Audio riprodotto con: aplay /tmp/tmpuxp_4p5j.wav
+2026-04-27 14:49:21 - jarvis - DEBUG - File temporaneo eliminato
+2026-04-27 14:49:30 - jarvis - DEBUG - Sintesi vocale: 'Ciao! Questo è un test dell'integrazione vocale....'
+2026-04-27 14:49:30 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmp7envmrw5.wav
+2026-04-27 14:49:33 - jarvis - DEBUG - File audio creato: /tmp/tmp7envmrw5.wav
+2026-04-27 14:49:33 - jarvis - DEBUG - Ambiente headless: False
+2026-04-27 14:49:33 - jarvis - DEBUG - Provo player: aplay /tmp/tmp7envmrw5.wav
+2026-04-27 14:49:43 - jarvis - DEBUG - Sintesi vocale: 'Ciao! Questo è un test veloce....'
+2026-04-27 14:49:43 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmpiie0vkpn.wav
+2026-04-27 14:49:44 - jarvis - DEBUG - File audio creato: /tmp/tmpiie0vkpn.wav
+2026-04-27 14:49:44 - jarvis - DEBUG - Ambiente headless: False
+2026-04-27 14:49:44 - jarvis - DEBUG - Provo player: aplay /tmp/tmpiie0vkpn.wav
+2026-04-27 14:49:45 - jarvis - DEBUG - Sintesi vocale per risposta AI: 'Ciao! Sono JARVIS, la tua intelligenza artificiale...'
+2026-04-27 14:49:45 - jarvis - DEBUG - Sintesi vocale: 'Ciao! Sono JARVIS, la tua intelligenza artificiale...'
+2026-04-27 14:49:45 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmpyl3w0bd0.wav
+2026-04-27 14:49:46 - jarvis - DEBUG - File audio creato: /tmp/tmpyl3w0bd0.wav
+2026-04-27 14:49:46 - jarvis - DEBUG - Ambiente headless: False
+2026-04-27 14:49:46 - jarvis - DEBUG - Provo player: aplay /tmp/tmpyl3w0bd0.wav
+2026-04-27 14:49:47 - jarvis - DEBUG - Audio riprodotto con: aplay /tmp/tmpiie0vkpn.wav
+2026-04-27 14:49:47 - jarvis - DEBUG - File temporaneo eliminato
+2026-04-27 14:49:51 - jarvis - DEBUG - Player aplay timeout, termino processo
+2026-04-27 14:49:51 - jarvis - DEBUG - Provo player: paplay /tmp/tmpyl3w0bd0.wav
+2026-04-27 14:50:18 - jarvis - INFO - JARVIS starting...
+2026-04-27 14:50:18 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 14:50:18 - jarvis - INFO - Model: qwen2.5:7b
+2026-04-27 14:50:18 - jarvis - INFO - Voice enabled: True
+2026-04-27 14:50:31 - jarvis - DEBUG - Routing query: ciao jarvis...
+2026-04-27 14:50:31 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 14:51:09 - jarvis - DEBUG - Memory saved: 20 messages
+2026-04-27 14:51:50 - jarvis - DEBUG - Sintesi vocale: 'Ciao! Questa è una prova della sintesi vocale di J...'
+2026-04-27 14:51:50 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmpjikkchfr.wav
+2026-04-27 14:51:51 - jarvis - DEBUG - File audio creato: /tmp/tmpjikkchfr.wav
+2026-04-27 14:51:51 - jarvis - DEBUG - Ambiente headless: False
+2026-04-27 14:51:51 - jarvis - DEBUG - Provo player: aplay /tmp/tmpjikkchfr.wav
+2026-04-27 14:51:55 - jarvis - DEBUG - Audio riprodotto con: aplay /tmp/tmpjikkchfr.wav
+2026-04-27 14:51:55 - jarvis - DEBUG - File temporaneo eliminato
+2026-04-27 14:52:09 - jarvis - DEBUG - Routing query: cosa puoi fare?...
+2026-04-27 14:52:09 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 14:52:52 - jarvis - DEBUG - Memory saved: 22 messages
+2026-04-27 14:54:20 - jarvis - DEBUG - Routing query: ciao...
+2026-04-27 14:54:20 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 14:54:47 - jarvis - DEBUG - Sintesi vocale: 'Ciao! Come posso aiutarti oggi?...'
+2026-04-27 14:54:47 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmp2v_x319k.wav
+2026-04-27 14:54:50 - jarvis - DEBUG - File audio creato: /tmp/tmp2v_x319k.wav
+2026-04-27 14:54:50 - jarvis - DEBUG - Ambiente headless: False
+2026-04-27 14:54:50 - jarvis - DEBUG - Provo player: aplay /tmp/tmp2v_x319k.wav
+2026-04-27 14:54:52 - jarvis - DEBUG - Audio riprodotto con: aplay /tmp/tmp2v_x319k.wav
+2026-04-27 14:54:52 - jarvis - DEBUG - File temporaneo eliminato
+2026-04-27 14:55:07 - jarvis - DEBUG - Memory saved: 24 messages
+2026-04-27 14:55:31 - jarvis - DEBUG - Routing query: ciao...
+2026-04-27 14:55:31 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 14:55:52 - jarvis - DEBUG - Chiamo sintesi vocale per risposta: Ciao! Come posso aiutarti oggi?...
+2026-04-27 14:55:53 - jarvis - DEBUG - Sintesi vocale: 'Ciao! Come posso aiutarti oggi?...'
+2026-04-27 14:55:53 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmp8pl3pi_y.wav
+2026-04-27 14:55:55 - jarvis - DEBUG - File audio creato: /tmp/tmp8pl3pi_y.wav
+2026-04-27 14:55:55 - jarvis - DEBUG - Ambiente headless: False
+2026-04-27 14:55:55 - jarvis - DEBUG - Provo player: aplay /tmp/tmp8pl3pi_y.wav
+2026-04-27 14:55:57 - jarvis - DEBUG - Audio riprodotto con: aplay /tmp/tmp8pl3pi_y.wav
+2026-04-27 14:55:57 - jarvis - DEBUG - File temporaneo eliminato
+2026-04-27 14:55:57 - jarvis - DEBUG - Sintesi vocale completata con successo
+2026-04-27 14:56:04 - jarvis - INFO - JARVIS starting...
+2026-04-27 14:56:04 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 14:56:04 - jarvis - INFO - Model: qwen2.5:7b
+2026-04-27 14:56:04 - jarvis - INFO - Voice enabled: True
+2026-04-27 14:56:37 - jarvis - INFO - JARVIS starting...
+2026-04-27 14:56:37 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 14:56:37 - jarvis - INFO - Model: qwen2.5:7b
+2026-04-27 14:56:37 - jarvis - INFO - Voice enabled: True
+2026-04-27 14:56:42 - jarvis - DEBUG - Routing query: ciao...
+2026-04-27 14:56:42 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 14:57:28 - jarvis - DEBUG - Memory saved: 26 messages
+2026-04-27 14:57:28 - jarvis - DEBUG - Chiamo sintesi vocale per risposta: 'Ciao! Come posso aiutarti oggi?...'
+2026-04-27 14:57:28 - jarvis - DEBUG - Sintesi vocale: 'Ciao! Come posso aiutarti oggi?...'
+2026-04-27 14:57:28 - jarvis - DEBUG - Eseguo comando Piper: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmpzcyocrkv.wav
+2026-04-27 14:57:29 - jarvis - DEBUG - File audio creato: /tmp/tmpzcyocrkv.wav
+2026-04-27 14:57:29 - jarvis - DEBUG - Ambiente headless: False
+2026-04-27 14:57:29 - jarvis - DEBUG - Provo player: aplay /tmp/tmpzcyocrkv.wav
+2026-04-27 14:57:32 - jarvis - DEBUG - Audio riprodotto con: aplay /tmp/tmpzcyocrkv.wav
+2026-04-27 14:57:32 - jarvis - DEBUG - File temporaneo eliminato
+2026-04-27 14:57:32 - jarvis - DEBUG - Sintesi vocale completata con successo
+2026-04-27 18:13:37 - jarvis - INFO - JARVIS starting...
+2026-04-27 18:13:37 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 18:13:37 - jarvis - INFO - Model: qwen2.5:7b
+2026-04-27 18:13:37 - jarvis - INFO - Voice enabled: True
+2026-04-27 18:13:37 - jarvis - DEBUG - VoiceEngine started
+2026-04-27 18:14:44 - jarvis - INFO - JARVIS starting...
+2026-04-27 18:14:44 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 18:14:44 - jarvis - INFO - Model: qwen2.5:7b
+2026-04-27 18:14:44 - jarvis - INFO - Voice enabled: True
+2026-04-27 18:14:44 - jarvis - DEBUG - VoiceEngine started
+2026-04-27 18:15:15 - jarvis - DEBUG - Routing query: ciao jarvis...
+2026-04-27 18:15:15 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 18:16:00 - jarvis - DEBUG - VoiceQueue push priority=1 text=Ciao!...
+2026-04-27 18:16:00 - jarvis - DEBUG - VoiceQueue pop text=Ciao!...
+2026-04-27 18:16:00 - jarvis - DEBUG - TTS Piper synthesize: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmpte6bnnja.wav
+2026-04-27 18:16:01 - jarvis - DEBUG - Memory saved: 28 messages
+2026-04-27 18:16:01 - jarvis - DEBUG - VoiceQueue push priority=1 text=Come posso aiutarti oggi?...
+2026-04-27 18:16:02 - jarvis - DEBUG - AudioFX apply_ironman: ffmpeg -y -i /tmp/tmpte6bnnja.wav -filter:a asetrate=44100*0.92,atempo=1.0,compand,lowpass=f=3200,highpass=f=90 /tmp/tmp6gqhjkik.wav
+2026-04-27 18:16:02 - jarvis - DEBUG - VoiceEngine playback: aplay /tmp/tmp6gqhjkik.wav
+2026-04-27 18:16:02 - jarvis - DEBUG - Audio riprodotto con: aplay
+2026-04-27 18:16:02 - jarvis - DEBUG - VoiceQueue pop text=Come posso aiutarti oggi?...
+2026-04-27 18:16:02 - jarvis - DEBUG - TTS Piper synthesize: piper --model voices/it_IT-riccardo-x_low.onnx --output_file /tmp/tmpm6gayvnm.wav
+2026-04-27 18:16:03 - jarvis - DEBUG - AudioFX apply_ironman: ffmpeg -y -i /tmp/tmpm6gayvnm.wav -filter:a asetrate=44100*0.92,atempo=1.0,compand,lowpass=f=3200,highpass=f=90 /tmp/tmpweuwuu55.wav
+2026-04-27 18:16:03 - jarvis - DEBUG - VoiceEngine playback: aplay /tmp/tmpweuwuu55.wav
+2026-04-27 18:16:04 - jarvis - DEBUG - Audio riprodotto con: aplay
+2026-04-27 18:18:48 - jarvis - DEBUG - Routing query: python3 -m py_compile ui/cli.py controller/jarvis_...
+2026-04-27 18:18:48 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 18:18:53 - jarvis - INFO - JARVIS interrupted by user
+2026-04-27 18:19:07 - jarvis - INFO - JARVIS starting...
+2026-04-27 18:19:07 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 18:19:07 - jarvis - INFO - Model: qwen2.5:7b
+2026-04-27 18:19:07 - jarvis - INFO - Voice enabled: True
+2026-04-27 18:20:05 - jarvis - INFO - JARVIS starting...
+2026-04-27 18:20:05 - jarvis - INFO - Ollama URL: http://localhost:11434/api/chat
+2026-04-27 18:20:05 - jarvis - INFO - Model: qwen2.5:7b
+2026-04-27 18:20:05 - jarvis - INFO - Voice enabled: True
+2026-04-27 18:20:07 - jarvis - DEBUG - Routing query: ciao...
+2026-04-27 18:20:07 - jarvis - DEBUG - Streaming LLM request to http://localhost:11434/api/chat with model qwen2.5:7b
+2026-04-27 18:20:13 - jarvis - INFO - JARVIS interrupted by user

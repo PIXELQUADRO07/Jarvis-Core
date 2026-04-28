@@ -18,10 +18,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Generator, Any
 
+from config        import get_config
 from core.commands import run_command
 from core.state    import set_status
 from core.llm      import stream_llm
 from core.tools.router import route_query
+from core.voice    import speak_text
+from logger        import debug
 
 
 # ─── UIEvent — contratto controller → UI ─────────────────────────────────────
@@ -66,6 +69,9 @@ def handle_input(raw: str) -> Generator[UIEvent, None, None]:
                 yield UIEvent("status", data)
             case "message":
                 yield UIEvent("system_msg", data)
+                system_event = result.get("system_event")
+                if system_event in ("voice_enabled", "voice_disabled"):
+                    yield UIEvent("banner_update")
             case "unknown":
                 yield UIEvent("system_msg", f"Comando sconosciuto: {data}  — digita /help")
             case _:
@@ -77,15 +83,23 @@ def handle_input(raw: str) -> Generator[UIEvent, None, None]:
 
     set_status("thinking")
     try:
+        # Prova routing a tool (meteo, wiki, math…)
         result = route_query(raw)
         if result:
             yield UIEvent("system_msg", result)
+            # Voce per risposta tool: delegata al VoiceEngine
+            config = get_config()
+            if config.enable_voice:
+                speak_text(result)
             return
 
+        # Streaming LLM
         for chunk in stream_llm(raw):
             set_status("streaming")
             yield UIEvent("ai_chunk", chunk)
+
         yield UIEvent("ai_done")
+
     except Exception as e:
         yield UIEvent("ai_error", str(e))
     finally:

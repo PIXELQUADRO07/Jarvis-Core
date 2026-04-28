@@ -14,3 +14,7 @@ __pycache__/
 # Cache / dati runtime
 core/tools/cache.json
 core/memory.json
+
+jarvis_config.json
+memory.json
+
