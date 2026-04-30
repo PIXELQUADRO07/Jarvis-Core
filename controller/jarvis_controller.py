@@ -94,9 +94,9 @@ def handle_input(raw: str) -> Generator[UIEvent, None, None]:
             return
 
         # Streaming LLM
-        for chunk in stream_llm(raw):
+        for token, metadata in stream_llm(raw):
             set_status("streaming")
-            yield UIEvent("ai_chunk", chunk)
+            yield UIEvent("ai_chunk", token)
 
         yield UIEvent("ai_done")
 

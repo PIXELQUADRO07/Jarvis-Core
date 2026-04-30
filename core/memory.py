@@ -3,20 +3,29 @@ from pathlib import Path
 from typing import List, Dict
 
 from config import get_config
+from core.session_manager import get_session_manager
 from logger import debug, error
 
 
 def load_memory() -> List[Dict]:
-    """Carica cronologia conversazioni da file JSON"""
+    """Carica cronologia conversazioni da file JSON (session-aware)"""
     config = get_config()
-    mem_file = Path(config.memory_file)
+    session_mgr = get_session_manager()
+    
+    # Usa session-aware path
+    mem_file = Path(session_mgr.get_session_file())
     
     if not mem_file.exists():
-        debug("Memory file not found, returning empty history")
+        debug(f"Memory file not found for session, returning empty history")
         return []
 
     try:
         data = json.loads(mem_file.read_text())
+        # Handle both old format (list) and new format (dict with metadata)
+        if isinstance(data, dict) and "messages" in data:
+            messages = data["messages"]
+        else:
+            messages = data if isinstance(data, list) else []
     except json.JSONDecodeError as e:
         error(f"Invalid JSON in memory file: {e}")
         return []
@@ -26,7 +35,7 @@ def load_memory() -> List[Dict]:
 
     # Filtro anti-spazzatura
     clean = []
-    for msg in data:
+    for msg in messages:
         if not isinstance(msg, dict):
             continue
         
@@ -47,9 +56,11 @@ def load_memory() -> List[Dict]:
 
 
 def save_memory(history: List[Dict]) -> bool:
-    """Salva cronologia conversazioni in file JSON"""
+    """Salva cronologia conversazioni in file JSON (session-aware)"""
     config = get_config()
-    mem_file = Path(config.memory_file)
+    session_mgr = get_session_manager()
+    
+    mem_file = Path(session_mgr.get_session_file())
     
     clean = []
 
@@ -70,8 +81,10 @@ def save_memory(history: List[Dict]) -> bool:
         clean = clean[-config.max_history_messages:]
 
     try:
+        # Save with session metadata
+        session_mgr.update_session_stats(len(clean))
         mem_file.write_text(json.dumps(clean, indent=2, ensure_ascii=False))
-        debug(f"Memory saved: {len(clean)} messages")
+        debug(f"Memory saved: {len(clean)} messages in session {session_mgr.current_session.name}")
         return True
     except Exception as e:
         error(f"Failed to save memory: {e}")

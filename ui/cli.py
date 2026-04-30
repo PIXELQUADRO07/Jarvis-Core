@@ -23,6 +23,7 @@ from rich.text    import Text
 from rich.align   import Align
 from rich.table   import Table
 from rich.rule    import Rule
+from rich.markdown import Markdown
 from rich         import box
 
 from prompt_toolkit            import PromptSession
@@ -74,16 +75,55 @@ def render_banner():
     console.print()
 
 
+def _has_markdown(text: str) -> bool:
+    """Verifica se il testo contiene markdown (liste, grassetto, ecc.)"""
+    markdown_patterns = [
+        '**', '__',  # grassetto
+        '*', '-', '+',  # liste/grassetto
+        '#', '##', '###',  # header
+        '```',  # codice
+        '[', '](',  # link
+    ]
+    text_lower = text.lower()
+    return any(pattern in text_lower for pattern in markdown_patterns)
+
+
 def render_jarvis_panel(text: str):
-    """Risposta completa di JARVIS in un pannello con bordo."""
-    console.print(Panel(
-        Text(text, style=BRIGHT_RED),
-        title="[bold red]// JARVIS[/]",
-        title_align="left",
-        border_style="red",
-        padding=(0, 2),
-        box=box.HEAVY,
-    ))
+    """Risposta completa di JARVIS in un pannello con bordo.
+    Supporta markdown se rilevato nel testo.
+    """
+    # Rileva e renderizza markdown se presente
+    if _has_markdown(text):
+        try:
+            content = Markdown(text)
+            console.print(Panel(
+                content,
+                title="[bold red]// JARVIS[/]",
+                title_align="left",
+                border_style="red",
+                padding=(0, 2),
+                box=box.HEAVY,
+            ))
+        except Exception as e:
+            # Fallback a plain text se markdown parsing fallisce
+            log_error(f"Markdown rendering failed: {e}")
+            console.print(Panel(
+                Text(text, style=BRIGHT_RED),
+                title="[bold red]// JARVIS[/]",
+                title_align="left",
+                border_style="red",
+                padding=(0, 2),
+                box=box.HEAVY,
+            ))
+    else:
+        console.print(Panel(
+            Text(text, style=BRIGHT_RED),
+            title="[bold red]// JARVIS[/]",
+            title_align="left",
+            border_style="red",
+            padding=(0, 2),
+            box=box.HEAVY,
+        ))
     console.print()
 
 

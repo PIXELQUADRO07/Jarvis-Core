@@ -8,14 +8,13 @@ __pycache__/
 # OS
 .DS_Store
 
-# Env
+# Env secrets
 .env
 
-# Cache / dati runtime
-core/tools/cache.json
-core/memory.json
-
-jarvis_config.json
+# Runtime data
 memory.json
-/logs
+core/tools/cache.json
+logs/
 
+# System config (opzionale)
+jarvis_config.json

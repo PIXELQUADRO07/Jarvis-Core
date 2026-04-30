@@ -4,6 +4,8 @@ import json
 from datetime import datetime
 
 from core.memory import load_memory, save_memory, clear_memory, get_memory_stats
+from core.token_counter import TokenCounter
+from core.session_manager import get_session_manager
 from config import get_config
 from logger import debug, error
 from core.voice import get_voice_engine, is_voice_available
@@ -15,6 +17,15 @@ def get_help() -> dict:
         "/help, /h": "Mostra questo elenco comandi",
         "/tools": "Mostra gli strumenti disponibili",
         "/memory, /m": "Mostra statistiche memoria conversazione",
+        "/model list": "Elenca modelli disponibili",
+        "/model set [name]": "Imposta modello attivo",
+        "/model current": "Mostra modello attuale",
+        "/session create [name]": "Crea nuova sessione",
+        "/session switch [name]": "Cambia sessione",
+        "/session list": "Elenca sessioni",
+        "/session current": "Sessione attuale",
+        "/session delete [name]": "Elimina sessione",
+        "/export": "Esporta conversazione a file markdown",
         "/clear": "Azzera la memoria conversazionale",
         "/status, /s": "Mostra stato del sistema e connessione",
         "/config": "Mostra configurazione attuale",
@@ -25,6 +36,21 @@ def get_help() -> dict:
         "/voice test": "Test sintesi vocale",
         "/exit, /quit": "Chiude JARVIS"
     }
+
+
+def get_available_models() -> list:
+    """Ottiene lista di modelli disponibili da Ollama"""
+    config = get_config()
+    try:
+        url = config.ollama_url.replace("/api/chat", "/api/tags")
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode())
+            models = [m.get("name", "?") for m in data.get("models", [])]
+            return models
+    except Exception as e:
+        debug(f"Failed to get models from Ollama: {e}")
+        return []
 
 
 def _check_ollama() -> dict:
@@ -242,6 +268,105 @@ def run_command(raw: str) -> dict:
             return {
                 "action": "message",
                 "data": f"Comando voce sconosciuto: {subcmd}. Usa: on|off|status|test"
+            }
+
+    # MODEL COMMANDS
+    if cmd.startswith("/model"):
+        parts = cmd.split()
+        if len(parts) < 2:
+            return {
+                "action": "message",
+                "data": "Uso: /model list|set [name]|current"
+            }
+        
+        subcmd = parts[1].lower()
+        config = get_config()
+        
+        if subcmd == "list":
+            models = get_available_models()
+            if not models:
+                return {
+                    "action": "message",
+                    "data": "❌ Nessun modello trovato. Assicurati che Ollama sia online e abbia modelli pullati."
+                }
+            current = config.model
+            model_list = "\n".join(
+                f"  {'✓' if m == current else ' '} {m}" 
+                for m in models
+            )
+            return {
+                "action": "message",
+                "data": f"📦 Modelli disponibili:\n{model_list}"
+            }
+        
+        elif subcmd == "current":
+            return {
+                "action": "message",
+                "data": f"📊 Modello attuale: **{config.model}**"
+            }
+        
+        elif subcmd == "set":
+            if len(parts) < 3:
+                return {
+                    "action": "message",
+                    "data": "Uso: /model set [nome_modello]"
+                }
+            model_name = parts[2]
+            available = get_available_models()
+            if model_name not in available:
+                return {
+                    "action": "message",
+                    "data": f"❌ Modello '{model_name}' non trovato. Usa /model list per vedere i disponibili."
+                }
+            config.model = model_name
+            config.save()
+            return {
+                "action": "message",
+                "data": f"✓ Modello cambiato a **{model_name}**"
+            }
+        
+        else:
+            return {
+                "action": "message",
+                "data": f"Comando modello sconosciuto: {subcmd}. Usa: list|set [name]|current"
+            }
+
+    # EXPORT
+    if cmd == "/export":
+        history = load_memory()
+        if not history:
+            return {
+                "action": "message",
+                "data": "✗ Cronologia vuota, nulla da esportare."
+            }
+        
+        # Crea file markdown
+        from datetime import datetime as dt
+        now = dt.now()
+        filename = f"exports/conversation_{now.strftime('%Y%m%d_%H%M%S')}.md"
+        
+        try:
+            with open(filename, "w", encoding="utf-8") as f:
+                f.write(f"# Conversazione JARVIS\n\n")
+                f.write(f"**Data:** {now.strftime('%d/%m/%Y %H:%M:%S')}\n")
+                f.write(f"**Modello:** {get_config().model}\n")
+                f.write(f"**Messaggi:** {len(history)}\n\n")
+                f.write("---\n\n")
+                
+                for msg in history:
+                    role = "👤 **Tu**" if msg["role"] == "user" else "🤖 **JARVIS**"
+                    f.write(f"### {role}\n\n")
+                    f.write(f"{msg['content']}\n\n")
+            
+            return {
+                "action": "message",
+                "data": f"✓ Conversazione esportata: **{filename}**"
+            }
+        except Exception as e:
+            error(f"Export failed: {e}")
+            return {
+                "action": "message",
+                "data": f"✗ Errore durante l'esportazione: {str(e)}"
             }
 
     # EXIT
