@@ -1,163 +1,143 @@
 # JARVIS AI — Core
 
-Assistente AI locale con architettura a layer separati.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+A local AI assistant with a layered architecture.
 
 <img width="1175" height="833" alt="Screenshot_20260430_143512" src="https://github.com/user-attachments/assets/1eaeb15c-f3fa-42d5-b8fe-887f4d60d986" />
 
-
-
-
-
-
-
-## Struttura
+## Directory Structure
 
 ```
 jarvis-core/
 ├── main.py                        ← entry point
 ├── requirements.txt
-├── memory.json                    ← memoria persistente (auto-generata)
+├── memory.json                    ← persistent memory (auto-generated)
 │
 ├── core/
-│   ├── llm.py                     ← streaming Ollama
-│   ├── memory.py                  ← persistenza conversazioni
-│   ├── state.py                   ← status globale thread-safe
-│   └── commands.py                ← routing comandi /slash
+│   ├── llm.py                     ← Ollama streaming
+│   ├── memory.py                  ← conversation persistence
+│   ├── state.py                   ← thread-safe global state
+│   └── commands.py                ← slash command routing
 │
 ├── controller/
-│   └── jarvis_controller.py       ← unico bridge UI ↔ core
+│   └── jarvis_controller.py       ← single UI ↔ core bridge
 │
 └── ui/
-    └── cli.py                     ← solo rendering, zero logica
+    └── cli.py                     ← rendering only, zero logic
 ```
 
 ## Setup
 
 ```bash
-# 1. Clona la repo
+# 1. Clone the repository
 git clone https://github.com/PIXELQUADRO07/Jarvis-Core
 
-# 2. Installa dipendenze Python
+# 2. Install Python dependencies
 pip install -r requirements.txt
 
-# 3. Scarica Ollama
-\\ARCH LINUX:
+# 3. Download Ollama
+# ARCH LINUX:
 sudo pacman -S ollama
 
-\\KALI LINUX o altre distro:
+# KALI LINUX or other distros:
 sudo apt install ollama
 
-# 4. Assicurati che Ollama sia in esecuzione
+# 4. Make sure Ollama is running
 ollama serve
 
-# 5. Scarica il modello (se non l'hai già)
+# 5. Download the model (if not already installed)
 ollama pull qwen2.5:7b
 
-# 6. Avvia JARVIS
+# 6. Start JARVIS
 python main.py
 ```
 
-## Cambiare modello
+## Changing the Model
 
-Il modello può essere cambiato in diversi modi:
+The model can be changed in several ways:
 
-### 1. Modifica `config.py`
-Cambia il valore di default in `config.py`:
+### 1. Modify `config.py`
+Change the default value in `config.py`:
 ```python
-model: str = "qwen2.5:7b"  # o qualsiasi modello installato
+model: str = "qwen2.5:7b"  # or any installed model
 ```
 
-### 2. Usa variabile d'ambiente
+### 2. Use environment variable
 ```bash
-export JARVIS_MODEL="qwen2.5:7b"
+dexport JARVIS_MODEL="qwen2.5:7b"
 python main.py
 ```
 
-### 3. Crea file `jarvis_config.json`
+### 3. Create `jarvis_config.json` file
 ```json
 {
   "model": "qwen2.5:7b"
 }
 ```
 
-## Comandi disponibili
+## Available Commands
 
-| Comando   | Azione                          |
-|-----------|---------------------------------|
-| `/help`   | Mostra i comandi                |
-| `/clear`  | Pulisce la schermata            |
-| `/reset`  | Azzera la memoria               |
-| `/status` | Stato Ollama + memoria          |
-| `/config` | Mostra configurazione attuale    |
-| `/voice`  | Controlla sintesi vocale        |
-| `/exit`   | Esci                            |
+| Command   | Action                          |
+|-----------|--------------------------------|
+| `/help`   | Show available commands        |
+| `/clear`  | Clear the screen               |
+| `/reset`  | Reset memory                   |
+| `/status` | Ollama status + memory info    |
+| `/config` | Show current configuration     |
+| `/voice`  | Control text-to-speech         |
+| `/exit`   | Exit application               |
 
-## Comandi Sistema
+## System Commands
 
-JARVIS supporta anche comandi naturali per la gestione del sistema:
+JARVIS also supports natural language commands for system management:
 
-### 📊 Monitoraggio (senza root)
-- **"quanta RAM hai?"** → Mostra utilizzo memoria
-- **"spazio disco"** → Utilizzo spazio su disco
-- **"uptime"** → Tempo di attività del sistema
-- **"mostra rete"** → Informazioni interfacce di rete
-- **"processi attivi"** → Lista processi in esecuzione
-- **"temperatura CPU"** → Temperature sistema (se disponibile)
-- **"stato batteria"** → Livello batteria (se laptop)
+### 📊 Monitoring (no root required)
+- **"how much RAM do you have?"** → Show memory usage
+- **"disk space"** → Show disk usage
+- **"uptime"** → System uptime
+- **"show network"** → Network interface information
+- **"running processes"** → List active processes
+- **"CPU temperature"** → System temperatures (if available)
+- **"battery status"** → Battery level (if laptop)
 
-### 🔧 Gestione Sistema (richiede root)
-- **"aggiorna sistema"** → Aggiorna pacchetti
-- **"installa firefox"** → Installa pacchetto
-- **"rimuovi firefox"** → Rimuovi pacchetto
-- **"servizio start apache2"** → Gestisci servizi systemd
-- **"hostname nuovo-nome"** → Cambia hostname
-- **"mostra log"** → Ultimi log di sistema
+### 🔧 System Management (requires root)
+- **"update system"** → Update packages
+- **"install firefox"** → Install package
+- **"remove firefox"** → Remove package
+- **"service start apache2"** → Manage systemd services
+- **"hostname new-name"** → Change hostname
+- **"show logs"** → Recent system logs
 
-### 🌐 Applicazioni
-- **"apri firefox"** → Apri Firefox
-- **"firefox cerca python"** → Cerca su Google con Firefox
-- **"apri gedit"** → Apri qualsiasi applicazione
+### 🌐 Applications
+- **"open firefox"** → Launch Firefox
+- **"firefox search python"** → Search on Google with Firefox
+- **"open gedit"** → Open any application
 
-### 💻 Sistema
-- **"che distro è?"** → Mostra distribuzione Linux
-- **"quanti CPU hai?"** → Numero processori logici
+### 💻 System Info
+- **"what distro is this?"** → Show Linux distribution
+- **"how many CPUs do you have?"** → Number of logical processors
 
-## Sintesi Vocale
+## Text-to-Speech
 
-JARVIS supporta la sintesi vocale tramite Piper TTS per rendere le risposte udibili.
+JARVIS supports text-to-speech synthesis via Piper TTS to make responses audible.
 
-### Installazione
+### Installation
 ```bash
-# Installa Piper
+# Install Piper
 pip install piper-tts
 
-# Scarica modello voce italiano (già presente)
-# I modelli sono in voices/
+# Download Italian voice model (already included)
+# Models are located in voices/
 ```
 
-### Comandi Voce
+### Voice Commands
 ```
-/voice on      → Abilita sintesi vocale
-/voice off     → Disabilita sintesi vocale  
-/voice status  → Mostra stato voce
-/voice test    → Test sintesi vocale
+/voice on      → Enable text-to-speech
+/voice off     → Disable text-to-speech  
+/voice status  → Show voice status
+/voice test    → Test text-to-speech
 ```
 
-### Configurazione
+### Configuration
 ```json
 {
   "enable_voice": true,
@@ -166,25 +146,25 @@ pip install piper-tts
 }
 ```
 
-### Variabili Ambiente
+### Environment Variables
 ```bash
 export JARVIS_VOICE_ENABLED="true"
 export JARVIS_VOICE_MODEL="voices/it_IT-riccardo-x_low.onnx"
 export JARVIS_VOICE_VOLUME="0.8"
 ```
 
-## Architettura
+## Architecture
 
 ```
 UI (cli.py)
-  ↓ input grezzo
+  ↓ raw input
 Controller (jarvis_controller.py)
   ↓ UIEvent generator
-  ├── /comando → core/commands → UIEvent(action)
-  └── testo    → core/llm     → UIEvent(ai_chunk) × N → UIEvent(ai_done)
+  ├── /command → core/commands → UIEvent(action)
+  └── text    → core/llm     → UIEvent(ai_chunk) × N → UIEvent(ai_done)
 UI
-  ↓ renderizza ogni UIEvent
+  ↓ renders each UIEvent
 ```
 
-La UI non conosce mai Ollama, la memoria o i comandi.
-Il core non conosce mai Rich o prompt_toolkit.
+The UI never knows about Ollama, memory, or commands.
+The core never knows about Rich or prompt_toolkit.
