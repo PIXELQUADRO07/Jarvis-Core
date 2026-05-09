@@ -1,0 +1,76 @@
+# ── Python ────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual environments ───────────────────────
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# ── Build / distribuzione ─────────────────────
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+wheels/
+
+# ── Test & Coverage ───────────────────────────
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+
+# ── Type checking ─────────────────────────────
+.mypy_cache/
+.dmypy.json
+
+# ── IDE ───────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── JARVIS — dati runtime ─────────────────────
+logs/
+exports/
+db/
+memory_sessions/
+memory.json
+memory.json.enc
+
+# ── JARVIS — chiave crittografia (SENSIBILE) ──
+.jarvis_key
+
+# ── JARVIS — cronologia CLI ───────────────────
+.jarvis_history
+
+# ── JARVIS — config personalizzata ───────────
+# (tieni jarvis_config.json nel repo solo se non contiene dati sensibili)
+# jarvis_config.json
+
+# ── Modelli vocali (file grandi) ──────────────
+voices/*.onnx
+voices/*.onnx.json
+
+# ── Variabili d'ambiente ──────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Docker ────────────────────────────────────
+*.tar
+
+# ── Jupyter ───────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb

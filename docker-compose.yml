@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  jarvis:
+    build: .
+    container_name: jarvis-pro
+    restart: unless-stopped
+    environment:
+      - OLLAMA_URL=http://ollama:11434/api/chat
+      - JARVIS_MODEL=qwen2.5:7b
+      - JARVIS_LANGUAGE=it
+      - JARVIS_ENABLE_API=true
+      - JARVIS_API_PORT=8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs
+      - ./exports:/app/exports
+      - ./db:/app/db
+      - ./memory_sessions:/app/memory_sessions
+      - ./voices:/app/voices
+      - ./plugins:/app/plugins
+      - ./jarvis_config.json:/app/jarvis_config.json
+    depends_on:
+      - ollama
+    networks:
+      - jarvis-net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - jarvis-net
+
+networks:
+  jarvis-net:
+    driver: bridge
+
+volumes:
+  ollama-data:
