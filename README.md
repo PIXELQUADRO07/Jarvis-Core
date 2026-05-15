@@ -1,31 +1,60 @@
-# JARVIS PRO — Local AI Assistant
+# 🤖 JARVIS PRO — Local AI Assistant
 
-Local AI assistant powered by Ollama with an advanced CLI, voice support, REST API, plugins, and more.
+> A powerful, feature-rich local AI assistant powered by Ollama with advanced CLI, voice support, REST API, plugin system, and more.
+
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-Supported-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen)]()
 
 ---
 
-## Quick Start
+## ⭐ Features
+
+- **🗣️ Voice Support** — Natural text-to-speech and voice input capabilities
+- **⚡ Fast & Local** — Runs entirely on your machine using Ollama
+- **🔌 Plugin System** — Extensible architecture for custom plugins
+- **🌐 REST API** — Full-featured HTTP API with interactive docs
+- **💾 Memory Management** — SQLite + JSON-based persistent storage
+- **🔐 Encryption** — Optional AES encryption for sensitive data
+- **🌍 Multi-Language** — Support for EN, IT, ES, FR, DE
+- **📊 Session Management** — Create and manage multiple conversations
+- **🎯 Advanced CLI** — Powerful command interface with 20+ commands
+- **🐳 Docker Ready** — Pre-configured Docker & Docker Compose setup
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.8+
+- [Ollama](https://ollama.ai) installed and running
+
+### Installation
 
 ```bash
-# 1. Clone or extract the project
-cd jarvis-pro
+# 1. Clone the repository
+git clone https://github.com/PIXELQUADRO07/Jarvis-Core.git
+cd Jarvis-Core
 
-# 2. Create a virtual environment and install dependencies
+# 2. Create and activate virtual environment
 python -m venv venv
-source venv/bin/activate       # Windows: venv\Scripts\activate
+source venv/bin/activate          # On Windows: venv\Scripts\activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 3. Start Ollama in a separate terminal
+# 4. Start Ollama (in a separate terminal)
 ollama serve
-ollama pull qwen2.5:7b         # or your preferred model
+ollama pull qwen2.5:7b            # or your preferred model
 
-# 4. Start JARVIS
+# 5. Launch JARVIS
 python main.py --lang en
 ```
 
 ---
 
-## Launch options
+## 🎮 Launch Options
 
 ```bash
 python main.py --lang en           # Start in English
@@ -38,186 +67,219 @@ python main.py --cleanup           # Clean old DB messages and exit
 
 ---
 
-## Docker
+## 🐳 Docker Setup
 
+### Option 1: Complete Setup (JARVIS + Ollama)
 ```bash
-# Build and run
 docker-compose up -d
+```
 
-# Run JARVIS only (if Ollama is already running)
+### Option 2: JARVIS Only (Ollama running separately)
+```bash
 docker build -t jarvis-pro .
-docker run -it --rm -e OLLAMA_URL=http://host.docker.internal:11434/api/chat jarvis-pro
+docker run -it --rm \
+  -e OLLAMA_URL=http://host.docker.internal:11434/api/chat \
+  jarvis-pro
 ```
 
 ---
 
-## CLI Commands
+## 💬 CLI Commands Reference
 
 | Command | Description |
 |---------|-------------|
-| `/help` | Show commands |
+| `/help` | Display all available commands |
 | `/status` | Show system and Ollama status |
-| `/config` | Show current configuration |
-| `/lang [it\|en\|es\|fr\|de]` | Change language |
-| `/silent on\|off` | Enable/disable silent mode |
+| `/config` | Display current configuration |
+| `/lang [it\|en\|es\|fr\|de]` | Change interface language |
+| `/silent on\|off` | Toggle silent/quiet mode |
 | `/model list` | List available Ollama models |
-| `/model set [name]` | Change model |
-| `/session create [name]` | Create session |
-| `/session switch [name]` | Switch session |
-| `/session list` | List sessions |
-| `/export` | Export chat to Markdown |
+| `/model set [name]` | Switch to different model |
+| `/session create [name]` | Create a new conversation session |
+| `/session switch [name]` | Switch to existing session |
+| `/session list` | Display all sessions |
+| `/export` | Export chat history to Markdown |
 | `/search [text]` | Search conversation history |
-| `/cleanup` | Remove old messages |
-| `/voice on\|off\|status\|test` | Voice control |
-| `/encrypt on\|off` | Memory encryption |
-| `/api on\|off` | REST API server |
-| `/plugins` | List plugins |
-| `/clear` | Reset session memory |
-| `/history` | Show last messages |
-| `/exit` | Quit |
+| `/cleanup` | Remove old/archived messages |
+| `/voice on\|off\|status\|test` | Voice control & testing |
+| `/encrypt on\|off` | Toggle memory encryption |
+| `/api on\|off` | Start/stop REST API server |
+| `/plugins` | List loaded plugins |
+| `/clear` | Reset current session |
+| `/history` | Show recent messages |
+| `/exit` | Quit JARVIS |
 
 ---
 
-## REST API
+## 🌐 REST API
 
-Run with `python main.py --api` (or `/api on`):
+Start the API with `python main.py --api` (or `/api on` in CLI).
 
+### Interactive Documentation
+Visit: **http://localhost:8000/docs**
+
+### API Endpoints
+
+#### Chat
 ```bash
-# Chat
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
   -d '{"message": "hello", "session": "default"}'
+```
 
-# Status
+#### System Status
+```bash
 curl http://localhost:8000/status
+```
 
-# Sessions
+#### Session Management
+```bash
 curl http://localhost:8000/sessions
+```
 
-# History
+#### Chat History
+```bash
 curl http://localhost:8000/history/default
+```
 
-# Search
+#### Search History
+```bash
 curl "http://localhost:8000/search?q=weather"
+```
 
-# With API key (if configured)
+#### With API Key (if configured)
+```bash
 curl -H "X-API-Key: your-api-key" http://localhost:8000/status
 ```
 
-Interactive docs: **http://localhost:8000/docs**
-
 ---
 
-## Plugins
+## 🔌 Plugin System
 
-Create a file in `plugins/my_plugin.py`:
+Create custom plugins to extend JARVIS capabilities!
+
+### Creating a Plugin
+
+Create a new file in `plugins/my_plugin.py`:
 
 ```python
 from core.plugin_manager import PluginBase
 
 class MyPlugin(PluginBase):
     name        = "my_plugin"
-    description = "What the plugin does"
+    description = "What your plugin does"
     version     = "1.0.0"
 
     def can_handle(self, query: str) -> bool:
+        """Return True if this plugin should handle the query"""
         return "my_keyword" in query.lower()
 
     def handle(self, query: str) -> str:
+        """Process the query and return response"""
         return "My plugin response!"
 ```
 
-The plugin will load automatically on the next start.
+Plugins load automatically on next startup. No additional configuration needed!
 
 ---
 
-## Memory Encryption
+## 🔐 Memory Encryption
+
+Enable AES encryption to protect sensitive conversation data.
 
 ```bash
+# Install cryptography (if not already installed)
 pip install cryptography
 
-# In CLI
+# Enable encryption in CLI
 /encrypt on
 ```
 
-An AES key is generated in `.jarvis_key` (do not commit this file).
+Your encryption key is stored in `.jarvis_key` — **Never commit this file to version control!**
 
 ---
 
-## Testing
+## 🧪 Testing
+
+Run the test suite to ensure everything works correctly:
 
 ```bash
+# Run all tests with verbose output
 pytest tests/ -v
+
+# Run tests with coverage report
 pytest tests/ --cov=core --cov-report=term-missing
 ```
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-jarvis-pro/
-├── main.py                    # Entry point
-├── config.py                  # Configuration (JSON + YAML + env)
-├── logger.py                  # Structured JSON logging with rotation
-├── jarvis_config.json         # Default configuration
-├── requirements.txt
+Jarvis-Core/
+├── main.py                        # Application entry point
+├── config.py                      # Configuration manager
+├── logger.py                      # Structured logging with rotation
+├── jarvis_config.json             # Default configuration
+├── requirements.txt               # Python dependencies
 ├── Dockerfile
 ├── docker-compose.yml
 │
-├── core/
-│   ├── llm.py                 # LLM streaming (Ollama)
-│   ├── memory.py              # Memory (SQLite + JSON file)
-│   ├── db.py                  # Persistent SQLite database
-│   ├── state.py               # Thread-safe internal state
-│   ├── commands.py            # Slash command dispatcher
-│   ├── security.py            # AES, rate limiting, sanitization
-│   ├── i18n.py                # Multi-language support (it/en/es/fr/de)
-│   ├── notifications.py       # Desktop notifications
-│   ├── plugin_manager.py      # Auto-loading plugin system
-│   ├── retry_handler.py       # Retry + circuit breaker
-│   ├── session_manager.py     # Multiple sessions
-│   ├── token_counter.py       # Token counter
-│   ├── voice.py               # Voice facade
-│   ├── voice_engine.py        # TTS worker daemon
-│   ├── voice_queue.py         # Priority TTS queue
-│   ├── audio_fx.py            # Iron Man audio effects
-│   ├── tts_piper.py           # Piper synthesis
-│   └── tools/
-│       ├── router.py          # Tool + plugin router
-│       ├── api_weather.py     # Weather
-│       ├── api_wiki.py        # Wikipedia
-│       ├── web_search.py      # DuckDuckGo search
-│       ├── math.py            # Calculations
-│       ├── scraper.py         # URL scraping
-│       ├── system.py          # System info
-│       └── cache.py           # Response cache
+├── core/                          # Core functionality
+│   ├── llm.py                     # LLM streaming (Ollama)
+│   ├── memory.py                  # Memory management
+│   ├── db.py                      # SQLite persistence
+│   ├── state.py                   # Thread-safe state
+│   ├── commands.py                # CLI command dispatcher
+│   ├── security.py                # Security & encryption
+│   ├── i18n.py                    # Multi-language support
+│   ├── notifications.py           # Desktop notifications
+│   ├── plugin_manager.py          # Plugin system
+│   ├── retry_handler.py           # Retry logic & circuit breaker
+│   ├── session_manager.py         # Session management
+│   ├── token_counter.py           # Token counting
+│   ├── voice.py                   # Voice interface
+│   ├── voice_engine.py            # TTS worker
+│   ├── voice_queue.py             # Audio queue
+│   ├── audio_fx.py                # Audio effects
+│   ├── tts_piper.py               # Piper TTS integration
+│   └── tools/                     # Utility tools
+│       ├── router.py              # Tool routing
+│       ├── api_weather.py         # Weather API
+│       ├── api_wiki.py            # Wikipedia integration
+│       ├── web_search.py          # Web search
+│       ├── math.py                # Math utilities
+│       ├── scraper.py             # Web scraping
+│       ├── system.py              # System info
+│       └── cache.py               # Response caching
 │
 ├── controller/
-│   └── jarvis_controller.py   # UI↔core controller
+│   └── jarvis_controller.py       # UI-Core bridge
 │
 ├── ui/
-│   └── cli.py                 # Advanced CLI
+│   └── cli.py                     # Advanced CLI interface
 │
 ├── api/
-│   └── rest_api.py            # FastAPI REST API
+│   └── rest_api.py                # FastAPI REST server
 │
-├── plugins/                   # User plugins
+├── plugins/                       # User-created plugins
 │   └── example_hello.py
 │
-├── tests/
-│   └── test_core.py           # Pytest unit tests
+├── tests/                         # Unit tests
+│   └── test_core.py
 │
-├── logs/                      # Rotating JSON logs
-├── exports/                   # Exported chat Markdown
-├── db/                        # SQLite database
-├── memory_sessions/           # Session JSON files
-└── voices/                    # Piper voice models (.onnx)
+├── logs/                          # Application logs
+├── exports/                       # Exported conversations
+├── db/                            # SQLite databases
+├── memory_sessions/               # Session data
+└── voices/                        # Piper voice models
 ```
 
 ---
 
-## Environment Variables
+## ⚙️ Configuration
+
+### Environment Variables
 
 ```bash
 OLLAMA_URL=http://localhost:11434/api/chat
@@ -232,3 +294,51 @@ JARVIS_API_KEY=your-secret-key
 JARVIS_ENCRYPT_MEMORY=false
 JARVIS_SILENT_MODE=false
 ```
+
+All settings can be configured via:
+- Environment variables
+- `.jarvis_config.json` (JSON format)
+- Command-line arguments
+- Interactive CLI commands
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to:
+- Report bugs via Issues
+- Suggest features
+- Submit Pull Requests
+- Create plugins
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📞 Support
+
+- 📖 Check the [Documentation](docs/)
+- 🐛 Report issues on [GitHub Issues](https://github.com/PIXELQUADRO07/Jarvis-Core/issues)
+- 💬 Start a discussion
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with [Ollama](https://ollama.ai)
+- API powered by [FastAPI](https://fastapi.tiangolo.com/)
+- Voice synthesis using [Piper TTS](https://github.com/rhasspy/piper)
+
+---
+
+<div align="center">
+
+**⭐ If you find this project helpful, please consider starring it! ⭐**
+
+Made with ❤️ by [PIXELQUADRO07](https://github.com/PIXELQUADRO07)
+
+</div>
