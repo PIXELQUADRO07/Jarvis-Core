@@ -1,5 +1,5 @@
 """
-core/llm.py — Streaming LLM con retry, circuit breaker, modalità silenziosa, multi-lingua.
+core/llm.py — Streaming LLM with retry, circuit breaker, silent mode, and multi-language support.
 """
 import json
 import re
@@ -16,7 +16,7 @@ from logger import debug, error, warning
 
 
 def get_system_prompt() -> dict:
-    """Genera il system prompt nella lingua corretta con eventuale modalità silenziosa."""
+    """Generate the system prompt in the selected language with optional silent mode."""
     from core.i18n import get_language
     config = get_config()
     now    = datetime.now()
@@ -84,12 +84,12 @@ def get_system_prompt() -> dict:
         ),
     }
 
-    return {"role": "system", "content": lang_prompts.get(lang, lang_prompts["it"])}
+    return {"role": "system", "content": lang_prompts.get(lang, lang_prompts["en"])}
 
 
 def stream_llm(text: str) -> Generator[Tuple[str, dict], None, None]:
     """
-    Streaming risposta LLM.
+    Stream LLM response.
     Yields (chunk_str, metadata_dict).
     """
     config  = get_config()
@@ -133,7 +133,7 @@ def stream_llm(text: str) -> Generator[Tuple[str, dict], None, None]:
             if not token:
                 continue
 
-            # Limite lunghezza risposta
+            # Response length limit
             if len(full_reply) + len(token) >= config.max_response_length:
                 token = token[: config.max_response_length - len(full_reply)]
                 full_reply += token
@@ -156,7 +156,7 @@ def stream_llm(text: str) -> Generator[Tuple[str, dict], None, None]:
 
     except CircuitBreakerOpen as e:
         error(f"Circuit breaker open: {e}")
-        fallback = "⚠️ Ollama è temporaneamente offline. Riprova tra pochi secondi."
+        fallback = "⚠️ Ollama is temporarily offline. Please try again in a few seconds."
         ctkns = TokenCounter.estimate_tokens(fallback, config.model)
         yield fallback, {"prompt_tokens": prompt_tokens,
                          "completion_tokens": ctkns,
@@ -165,7 +165,7 @@ def stream_llm(text: str) -> Generator[Tuple[str, dict], None, None]:
         return
 
     except urllib.error.URLError as e:
-        raise ConnectionError(f"Ollama non raggiungibile: {e.reason}") from e
+        raise ConnectionError(f"Cannot reach Ollama: {e.reason}") from e
     except urllib.error.HTTPError as e:
         raise ConnectionError(f"Ollama HTTP {e.code}") from e
     except TimeoutError as e:
@@ -181,7 +181,7 @@ def stream_llm(text: str) -> Generator[Tuple[str, dict], None, None]:
 
 
 def strip_markdown(text: str) -> str:
-    """Rimuove markup Markdown per la voce (TTS non legge le stelle)."""
+    """Remove Markdown markup for TTS (text-to-speech does not read formatting)."""
     text = re.sub(r"\*{1,3}(.+?)\*{1,3}", r"\1", text)
     text = re.sub(r"#{1,6}\s+", "", text)
     text = re.sub(r"`{1,3}[^`]*`{1,3}", "", text)

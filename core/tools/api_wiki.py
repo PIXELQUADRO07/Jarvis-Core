@@ -20,7 +20,7 @@ NORMALIZE_PREFIXES = (
 
 
 def _normalize_query(query: str) -> str:
-    """Normalizza la query rimuovendo prefissi comuni"""
+    """Normalize the query by removing common prefixes."""
     q = query.strip().lower()
     for prefix in NORMALIZE_PREFIXES:
         if q.startswith(prefix):
@@ -30,10 +30,10 @@ def _normalize_query(query: str) -> str:
 
 
 def wiki_search(query: str) -> str:
-    """Cerca informazioni su Wikipedia"""
+    """Search Wikipedia for information."""
     query = _normalize_query(query)
     if not query:
-        return "❌ Query non valida."
+        return "❌ Invalid query."
 
     cache_key = f"wiki:{query}"
     cached = cache_get(cache_key)
@@ -70,4 +70,4 @@ def wiki_search(query: str) -> str:
         set_cache(cache_key, fallback)
         return fallback
 
-    return f"❌ Nessuna info trovata su {query}. Prova con un altro termine."
+    return f"❌ No information found for {query}. Try another query."

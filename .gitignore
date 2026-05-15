@@ -74,3 +74,4 @@ voices/*.onnx.json
 # ── Jupyter ───────────────────────────────────
 .ipynb_checkpoints/
 *.ipynb
+en_US-ryan-high.onnx

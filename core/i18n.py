@@ -1,6 +1,6 @@
 """
-core/i18n.py — Supporto multi-lingua runtime.
-Cambia lingua con /lang [it|en|es|fr|de] senza riavvio.
+core/i18n.py — Runtime multilingual support.
+Change language with /lang [it|en|es|fr|de] without restarting.
 """
 from typing import Dict
 
@@ -8,6 +8,7 @@ _STRINGS: Dict[str, Dict[str, str]] = {
     "it": {
         "greeting":        "Sistemi online. Sono JARVIS, la tua intelligenza artificiale locale.",
         "help_hint":       "Scrivi /help per i comandi disponibili.",
+        "input_hint":      "Scrivi un messaggio… (Tab per comandi, Esc+Enter per multiriga)",
         "thinking":        "Pensando",
         "processing":      "Elaborando",
         "analyzing":       "Analizzando",
@@ -31,6 +32,7 @@ _STRINGS: Dict[str, Dict[str, str]] = {
     "en": {
         "greeting":        "Systems online. I am JARVIS, your local AI assistant.",
         "help_hint":       "Type /help for available commands.",
+        "input_hint":      "Type a message... (Tab for commands, Esc+Enter for multiline)",
         "thinking":        "Thinking",
         "processing":      "Processing",
         "analyzing":       "Analyzing",
@@ -54,6 +56,7 @@ _STRINGS: Dict[str, Dict[str, str]] = {
     "es": {
         "greeting":        "Sistemas en línea. Soy JARVIS, tu asistente de IA local.",
         "help_hint":       "Escribe /help para ver los comandos disponibles.",
+        "input_hint":      "Escribe un mensaje... (Tab para comandos, Esc+Enter para varias líneas)",
         "thinking":        "Pensando",
         "processing":      "Procesando",
         "analyzing":       "Analizando",
@@ -77,6 +80,7 @@ _STRINGS: Dict[str, Dict[str, str]] = {
     "fr": {
         "greeting":        "Systèmes en ligne. Je suis JARVIS, votre assistant IA local.",
         "help_hint":       "Tapez /help pour les commandes disponibles.",
+        "input_hint":      "Écrivez un message... (Tab pour les commandes, Échap+Entrée pour plusieurs lignes)",
         "thinking":        "Réflexion",
         "processing":      "Traitement",
         "analyzing":       "Analyse",
@@ -100,6 +104,7 @@ _STRINGS: Dict[str, Dict[str, str]] = {
     "de": {
         "greeting":        "Systeme online. Ich bin JARVIS, Ihr lokaler KI-Assistent.",
         "help_hint":       "Tippe /help für verfügbare Befehle.",
+        "input_hint":      "Gib eine Nachricht ein... (Tab für Befehle, Esc+Enter für mehrere Zeilen)",
         "thinking":        "Denke",
         "processing":      "Verarbeite",
         "analyzing":       "Analysiere",
@@ -122,7 +127,7 @@ _STRINGS: Dict[str, Dict[str, str]] = {
     },
 }
 
-_current_lang = "it"
+_current_lang = "en"
 
 
 def set_language(lang: str) -> bool:
@@ -138,9 +143,9 @@ def get_language() -> str:
 
 
 def t(key: str, **kwargs) -> str:
-    """Traduce una chiave nella lingua corrente."""
-    lang_dict = _STRINGS.get(_current_lang, _STRINGS["it"])
-    text = lang_dict.get(key, _STRINGS["it"].get(key, key))
+    """Translate a key into the current language."""
+    lang_dict = _STRINGS.get(_current_lang, _STRINGS["en"])
+    text = lang_dict.get(key, _STRINGS["en"].get(key, key))
     if kwargs:
         try:
             text = text.format(**kwargs)

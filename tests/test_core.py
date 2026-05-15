@@ -34,21 +34,21 @@ def test_config_validation_language_fallback():
     cfg = JarvisConfig()
     cfg.language = "zz"
     cfg._validate()
-    assert cfg.language == "it"
+    assert cfg.language == "en"
 
 
 # ── Security ─────────────────────────────────────────────────────────────────
 
 def test_sanitize_input_clean():
     from core.security import sanitize_input
-    assert sanitize_input("ciao come stai?") == "ciao come stai?"
+    assert sanitize_input("hello how are you?") == "hello how are you?"
 
 
 def test_sanitize_input_removes_script():
     from core.security import sanitize_input
-    result = sanitize_input("<script>alert('xss')</script>testo")
+    result = sanitize_input("<script>alert('xss')</script>text")
     assert "<script>" not in result
-    assert "testo" in result
+    assert "text" in result
 
 
 def test_sanitize_input_truncates_long():
@@ -121,8 +121,8 @@ def test_i18n_invalid_lang():
 def test_voice_queue_push_pop():
     from core.voice_queue import VoiceQueue
     q = VoiceQueue()
-    q.push("ciao", priority=1)
-    assert q.pop() == "ciao"
+    q.push("hello", priority=1)
+    assert q.pop() == "hello"
     assert q.pop() is None
 
 
@@ -155,9 +155,9 @@ def test_voice_queue_clear():
 
 def test_pop_complete_sentence_basic():
     from core.voice_queue import pop_complete_sentence
-    sentence, remaining = pop_complete_sentence("Ciao come stai. Bene grazie")
-    assert sentence == "Ciao come stai."
-    assert "Bene" in remaining
+    sentence, remaining = pop_complete_sentence("Hello how are you. I am fine")
+    assert sentence == "Hello how are you."
+    assert "I am fine" in remaining
 
 
 def test_pop_complete_sentence_no_terminator():
@@ -177,7 +177,7 @@ def test_pop_complete_sentence_empty():
 
 def test_token_counter_basic():
     from core.token_counter import TokenCounter
-    tokens = TokenCounter.estimate_tokens("Ciao come stai?", "mistral")
+    tokens = TokenCounter.estimate_tokens("Hello how are you?", "mistral")
     assert tokens > 0
 
 
@@ -203,24 +203,24 @@ def test_plugin_manager_empty_dir(tmp_path):
 
 
 def test_plugin_manager_load_plugin(tmp_path):
-    # Crea un plugin valido
+    # Create a valid plugin
     plugin_code = '''
 from core.plugin_manager import PluginBase
 class TestPlugin(PluginBase):
     name = "test_plugin"
-    description = "Plugin di test"
+    description = "Test plugin"
     def can_handle(self, query):
         return "test" in query.lower()
     def handle(self, query):
-        return "risposta test"
+        return "test response"
 '''
     (tmp_path / "test_plugin.py").write_text(plugin_code)
     from core.plugin_manager import PluginManager
     pm = PluginManager(plugins_dir=str(tmp_path))
     n = pm.load_all()
     assert n == 1
-    result = pm.route("questo è un test")
-    assert result == "risposta test"
+    result = pm.route("this is a test")
+    assert result == "test response"
 
 
 def test_plugin_manager_disable(tmp_path):
@@ -245,8 +245,8 @@ class DisPlugin(PluginBase):
 def test_db_save_and_load(tmp_path):
     from core.db import ConversationDB
     db = ConversationDB(str(tmp_path / "test.db"))
-    db.save_message("sess1", "user",      "Ciao JARVIS")
-    db.save_message("sess1", "assistant", "Ciao utente!")
+    db.save_message("sess1", "user",      "Hello JARVIS")
+    db.save_message("sess1", "assistant", "Hello user!")
     msgs = db.load_session("sess1")
     assert len(msgs) == 2
     assert msgs[0]["role"] == "user"
@@ -256,21 +256,21 @@ def test_db_save_and_load(tmp_path):
 def test_db_search(tmp_path):
     from core.db import ConversationDB
     db = ConversationDB(str(tmp_path / "test.db"))
-    db.save_message("sess1", "user", "Mi parli del meteo a Roma")
-    results = db.search("meteo")
+    db.save_message("sess1", "user", "Tell me about the weather in London")
+    results = db.search("weather")
     assert len(results) >= 1
-    assert "meteo" in results[0]["content"].lower()
+    assert "weather" in results[0]["content"].lower()
 
 
 def test_db_export_markdown(tmp_path):
     from core.db import ConversationDB
     db = ConversationDB(str(tmp_path / "test.db"))
-    db.save_message("s1", "user",      "Domanda")
-    db.save_message("s1", "assistant", "Risposta")
+    db.save_message("s1", "user",      "Question")
+    db.save_message("s1", "assistant", "Answer")
     md = db.export_session_markdown("s1")
-    assert "Domanda" in md
-    assert "Risposta" in md
-    assert "# Conversazione" in md
+    assert "Question" in md
+    assert "Answer" in md
+    assert "# JARVIS Conversation" in md
 
 
 def test_db_cleanup(tmp_path):

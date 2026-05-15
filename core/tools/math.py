@@ -3,15 +3,15 @@ import math
 
 def calculate(expression: str) -> str:
     """
-    Valuta un'espressione matematica semplice.
-    Supporta operazioni base: +, -, *, /, **, sqrt, sin, cos, etc.
+    Evaluate a simple math expression.
+    Supports basic operators: +, -, *, /, **, sqrt, sin, cos, etc.
     """
     try:
-        # Rimuovi caratteri pericolosi
+        # Remove dangerous characters
         if any(char in expression for char in [';', '__', 'import', 'exec', 'eval']):
-            return "Espressione non sicura."
+            return "Unsafe expression."
 
-        # Sostituisci funzioni comuni
+        # Replace common functions
         expression = re.sub(r'\bsqrt\b', 'math.sqrt', expression)
         expression = re.sub(r'\bsin\b', 'math.sin', expression)
         expression = re.sub(r'\bcos\b', 'math.cos', expression)
@@ -23,6 +23,6 @@ def calculate(expression: str) -> str:
 
         # Valuta in un contesto sicuro
         result = eval(expression, {"__builtins__": None}, {"math": math})
-        return f"Risultato: {result}"
+        return f"Result: {result}"
     except Exception as e:
-        return f"Errore nel calcolo: {str(e)}"
+        return f"Calculation error: {str(e)}"

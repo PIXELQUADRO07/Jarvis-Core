@@ -1,6 +1,6 @@
 """
-core/state.py — Stato globale di JARVIS
-Thread-safe: spinner e AI thread leggono/scrivono in sicurezza.
+core/state.py — Global JARVIS state.
+Thread-safe: spinner and AI threads read/write safely.
 """
 import threading
 

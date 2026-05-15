@@ -1,6 +1,6 @@
 """
-core/notifications.py — Notifiche desktop cross-platform.
-Usa notify-send (Linux), AppleScript (macOS) o plyer come fallback.
+core/notifications.py — Cross-platform desktop notifications.
+Uses notify-send (Linux), AppleScript (macOS), or plyer as fallback.
 """
 import shutil
 import subprocess
@@ -39,11 +39,11 @@ def _notify_plyer(title: str, body: str) -> bool:
 
 def send_notification(title: str, body: str, level: str = "info") -> bool:
     """
-    Invia una notifica desktop.
+    Send a desktop notification.
 
     Args:
-        title: Titolo notifica
-        body: Corpo del messaggio
+        title: Notification title
+        body: Message body
         level: "info" | "warning" | "error"
     """
     icon_map = {
@@ -65,7 +65,7 @@ def send_notification(title: str, body: str, level: str = "info") -> bool:
 
 class NotificationManager:
     """
-    Gestore notifiche con filtro per livello.
+    Notification manager with level filtering.
     Levels: "all" | "important" | "error"
     """
 
@@ -88,13 +88,13 @@ class NotificationManager:
         return send_notification(title, body, msg_level)
 
     def jarvis_reply(self, text: str):
-        """Notifica una risposta importante di JARVIS."""
+        """Notify an important JARVIS reply."""
         preview = text[:100] + ("…" if len(text) > 100 else "")
         self.notify("JARVIS", preview, "info")
 
     def error_alert(self, text: str):
-        """Notifica un errore."""
-        self.notify("JARVIS — Errore", text, "error")
+        """Notify an error."""
+        self.notify("JARVIS — Error", text, "error")
 
 
 _notifier: Optional[NotificationManager] = None

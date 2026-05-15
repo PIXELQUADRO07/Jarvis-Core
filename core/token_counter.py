@@ -86,7 +86,7 @@ if __name__ == "__main__":
     print("🧪 Token Counter Test")
     print("=" * 40)
     
-    test_text = "Ciao JARVIS, come stai? Mi piacerebbe sapere il meteo di oggi."
+    test_text = "Hello JARVIS, how are you? I'd like to know the weather today."
     
     for model in ["mistral", "llama2", "neural-chat", "default"]:
         tokens = TokenCounter.estimate_tokens(test_text, model)

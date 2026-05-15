@@ -1,17 +1,17 @@
 """
-api/rest_api.py — API REST FastAPI per integrazioni esterne.
+api/rest_api.py — FastAPI REST API for external integrations.
 
-Endpoint:
-  POST /chat          — Invia messaggio, riceve risposta streaming (SSE)
-  GET  /status        — Stato sistema
-  GET  /sessions      — Lista sessioni
-  POST /sessions      — Crea sessione
-  GET  /history/{session} — Storico conversazione
-  GET  /search?q=...  — Ricerca nello storico
+Endpoints:
+  POST /chat          — Send a message, receive streaming response (SSE)
+  GET  /status        — System status
+  GET  /sessions      — List sessions
+  POST /sessions      — Create a session
+  GET  /history/{session} — Conversation history
+  GET  /search?q=...  — Search conversation history
 
-Avvio:
+Launch:
   python -m api.rest_api
-  o da main.py con --api
+  or from main.py with --api
 """
 from __future__ import annotations
 
@@ -44,11 +44,11 @@ def _check_api_key(x_api_key: Optional[str] = Header(None)):
 
 def create_app() -> "FastAPI":
     if not _FASTAPI_AVAILABLE:
-        raise ImportError("FastAPI non installato. Installa con: pip install fastapi uvicorn")
+        raise ImportError("FastAPI not installed. Install with: pip install fastapi uvicorn")
 
     app = FastAPI(
         title="JARVIS API",
-        description="REST API per JARVIS AI locale",
+        description="REST API for local JARVIS AI",
         version="2.0.0",
     )
 
@@ -156,9 +156,9 @@ def create_app() -> "FastAPI":
 
 
 def run_api_server():
-    """Avvia il server API in un thread separato (daemon)."""
+    """Start the API server in a separate daemon thread."""
     if not _FASTAPI_AVAILABLE:
-        error("FastAPI non disponibile — API server non avviata")
+        error("FastAPI unavailable — API server not started")
         return
 
     cfg = get_config()

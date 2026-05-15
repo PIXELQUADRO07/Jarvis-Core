@@ -1,6 +1,6 @@
 """
-core/voice_engine.py — Motore vocale asincrono con Piper TTS + Iron Man FX.
-Worker daemon thread: sintetizza, applica FX, riproduce.
+core/voice_engine.py — Asynchronous voice engine with Piper TTS + Iron Man FX.
+Worker daemon thread: synthesize, apply FX, play audio.
 """
 import os
 import shutil

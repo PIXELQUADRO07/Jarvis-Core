@@ -1,5 +1,5 @@
 """
-core/tools/router.py — Router query con supporto plugin, web search, e tutti i tool.
+core/tools/router.py — Query router with plugin, web search, and tool support.
 """
 import re
 from typing import Optional
@@ -8,15 +8,15 @@ from logger import debug
 
 def route_query(query: str) -> Optional[str]:
     """
-    Routizza la query al tool o plugin appropriato.
-    Priorità:
-      1. Plugin esterni (auto-caricati)
-      2. Comandi sistema
-      3. Orario città
+    Route the query to the appropriate tool or plugin.
+    Priority:
+      1. External plugins (auto-loaded)
+      2. System commands
+      3. City time
       4. Wikipedia
       5. URL scraping
-      6. Calcoli matematici
-      7. Meteo
+      6. Math calculations
+      7. Weather
       8. Web search (DuckDuckGo)
     """
     from config import get_config
@@ -74,7 +74,7 @@ def route_query(query: str) -> Optional[str]:
         if math_expr:
             from core.tools.math import calculate
             result = calculate(math_expr)
-            if "Risultato:" in result:
+            if "Result:" in result:
                 return result
 
     # ── Meteo ────────────────────────────────────────────────────────────
@@ -82,19 +82,19 @@ def route_query(query: str) -> Optional[str]:
         kw in q for kw in ("meteo", "tempo", "previsione", "previsioni", "weather", "forecast")
     ):
         from core.tools.api_weather import get_weather
-        city = "Napoli"
-        match = re.search(r"(?:meteo|tempo|previsione[i]?)(?:\s+(?:a|di|in|per))?\s+(.+)", q)
+        city = "London"
+        match = re.search(r"(?:meteo|tempo|previsione[i]?|weather|forecast)(?:\s+(?:a|di|in|per|in))?\s+(.+)", q)
         if match:
             candidate = match.group(1).strip(" ?!.,")
             if candidate and len(candidate) > 1:
                 city = candidate
         result = get_weather(city)
-        if result and "Impossibile" not in result:
+        if result and not result.startswith("❌"):
             return result
 
     # ── Web search (ultimo fallback prima del LLM) ────────────────────────
     if config.enable_web_search:
-        # Solo per query che sembrano richiedere informazioni esterne/recenti
+        # Only for queries that seem to require external or recent information
         web_triggers = (
             "cerca", "search", "trova", "notizie", "news", "ultime",
             "recenti", "oggi", "ieri", "questa settimana",

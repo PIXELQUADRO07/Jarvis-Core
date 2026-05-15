@@ -4,7 +4,7 @@ from logger import debug, error
 
 
 def apply_ironman(input_wav: str, output_wav: str) -> bool:
-    """Applica un filtro audio in stile Iron Man al file WAV."""
+    """Apply an Iron Man-style audio filter to the WAV file."""
     cmd = [
         "ffmpeg", "-y",
         "-i", input_wav,
@@ -17,8 +17,8 @@ def apply_ironman(input_wav: str, output_wav: str) -> bool:
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         return True
     except subprocess.CalledProcessError as e:
-        error(f"Errore audio FX: {e}")
+        error(f"Audio FX error: {e}")
         return False
     except FileNotFoundError:
-        error("ffmpeg non trovato: installalo per applicare l'audio FX")
+        error("ffmpeg not found: install it to apply audio FX")
         return False

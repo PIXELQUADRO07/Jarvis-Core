@@ -1,23 +1,23 @@
 """
-plugins/example_hello.py — Plugin di esempio.
-Rinomina in hello.py (rimuovi "example_") per attivarlo.
+plugins/example_hello.py — Example plugin.
+Rename to hello.py (remove "example_") to activate it.
 
-Come funziona:
-  1. Il PluginManager carica tutti i file *.py in plugins/
-  2. Trova classi che ereditano da PluginBase
-  3. Chiama can_handle(query) per ogni messaggio
-  4. Se True, chiama handle(query) e usa il risultato invece del LLM
+How it works:
+  1. PluginManager loads all *.py files in plugins/
+  2. Finds classes inheriting from PluginBase
+  3. Calls can_handle(query) for each message
+  4. If True, calls handle(query) and uses the result instead of the LLM
 """
 from core.plugin_manager import PluginBase
 
 
 class HelloPlugin(PluginBase):
     name        = "hello"
-    description = "Risponde ai saluti con un messaggio personalizzato"
+    description = "Replies to greetings with a custom message"
     version     = "1.0.0"
-    author      = "Tu"
+    author      = "You"
 
-    _GREETINGS = ("ciao", "salve", "buongiorno", "buonasera", "hey", "hello", "hi")
+    _GREETINGS = ("hello", "hi", "hey", "good morning", "good afternoon", "good evening")
 
     def can_handle(self, query: str) -> bool:
         q = query.lower().strip()
@@ -27,9 +27,9 @@ class HelloPlugin(PluginBase):
         from datetime import datetime
         hour = datetime.now().hour
         if hour < 12:
-            saluto = "Buongiorno"
+            greeting = "Good morning"
         elif hour < 18:
-            saluto = "Buon pomeriggio"
+            greeting = "Good afternoon"
         else:
-            saluto = "Buonasera"
-        return f"{saluto}! Sono JARVIS PRO. Come posso aiutarti oggi?"
+            greeting = "Good evening"
+        return f"{greeting}! I am JARVIS PRO. How can I help you today?"

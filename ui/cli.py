@@ -1,15 +1,15 @@
 """
 ui/cli.py — JARVIS PRO CLI
-Funzionalità:
-  • Spinner "Thinking…" animato (stile Claude)
-  • Risposta AI in pannello con render Markdown (rich.Markdown)
-  • Streaming live nel pannello (rich.Live)
-  • Contatore token in footer
-  • Autocompletamento Tab per comandi /slash
-  • Cronologia persistente tra sessioni (FileHistory)
-  • Input multiriga (Shift+Enter)
-  • Modalità silenziosa
-  • Supporto multi-lingua
+Features:
+  • Animated "Thinking…" spinner
+  • AI response panel with Markdown rendering (rich.Markdown)
+  • Live streaming panel (rich.Live)
+  • Token counter in footer
+  • Tab autocomplete for /slash commands
+  • Persistent history across sessions (FileHistory)
+  • Multiline input (Shift+Enter)
+  • Silent mode
+  • Multi-language support
 """
 import itertools
 import threading
@@ -99,7 +99,7 @@ def render_banner():
 
 
 def render_jarvis_panel(text: str, tokens: dict = None):
-    """Risposta JARVIS completa con Markdown opzionale e footer token."""
+    """Render JARVIS response with optional Markdown and token footer."""
     config = get_config()
     if config.render_markdown:
         content = Markdown(text)
@@ -126,7 +126,7 @@ def render_jarvis_panel(text: str, tokens: dict = None):
 def render_user_panel(text: str):
     console.print(Align.right(Panel(
         Text(text, style=ORANGE),
-        title="[dark_orange]// UTENTE[/]",
+        title="[dark_orange]// USER[/]",
         title_align="right",
         border_style="dark_orange",
         padding=(0, 2),
@@ -150,11 +150,11 @@ def render_success_msg(text: str):
 def render_help():
     table = Table(box=box.SIMPLE, border_style="red",
                   header_style=RED, show_header=True, padding=(0, 2))
-    table.add_column("Comando",     style=BRRED, no_wrap=True)
-    table.add_column("Descrizione", style=DIM_R)
+    table.add_column("Command",     style=BRRED, no_wrap=True)
+    table.add_column("Description", style=DIM_R)
     for cmd, desc in get_help().items():
         table.add_row(cmd, desc)
-    console.print(Panel(table, title="[bold red]// COMANDI[/]", border_style="red"))
+    console.print(Panel(table, title="[bold red]// COMMANDS[/]", border_style="red"))
     console.print()
 
 
@@ -173,17 +173,17 @@ def render_status(info: dict = None):
     table.add_column("", style=DIM_R, width=28)
     table.add_column("", style=BRRED)
     table.add_row("Ollama",             f"[{color}]{label}[/]")
-    table.add_row("Modello attivo",     model)
-    table.add_row("Lingua",             get_language().upper())
-    table.add_row("Modalità silenziosa","ON" if config.silent_mode else "OFF")
-    table.add_row("Stato interno",      get_status())
-    table.add_row("Ora sistema",        datetime.now().strftime("%H:%M:%S"))
-    table.add_row("Plugin attivi",      str(config.enable_plugins))
+    table.add_row("Active model",       model)
+    table.add_row("Language",           get_language().upper())
+    table.add_row("Silent mode",        "ON" if config.silent_mode else "OFF")
+    table.add_row("Internal state",     get_status())
+    table.add_row("System time",        datetime.now().strftime("%H:%M:%S"))
+    table.add_row("Plugins enabled",    str(config.enable_plugins))
     table.add_row("API server",         "ON" if config.enable_api else "OFF")
     if models:
         ms = ", ".join(models[:4]) + (f", +{len(models)-4}" if len(models) > 4 else "")
-        table.add_row("Modelli disponibili", ms)
-    console.print(Panel(table, title="[bold red]// STATUS SISTEMA[/]", border_style="red"))
+        table.add_row("Available models", ms)
+    console.print(Panel(table, title="[bold red]// SYSTEM STATUS[/]", border_style="red"))
     console.print()
 
 
@@ -191,7 +191,7 @@ def render_status(info: dict = None):
 
 class ThinkingSpinner:
     _DOTS   = ["   ", ".  ", ".. ", "..."]
-    _STATES = ["Pensando", "Elaborando", "Analizzando", "Rispondo"]
+    _STATES = ["Thinking", "Processing", "Analyzing", "Responding"]
 
     def __init__(self):
         self._stop   = threading.Event()
@@ -229,7 +229,7 @@ def _render_ai_stream(event_gen) -> bool:
     """
     Streaming AI con:
     - Spinner fino al primo token
-    - Live panel che aggiorna il testo in tempo reale
+    - Live panel that updates text in real time
     - Render Markdown finale nel pannello completo
     - Voce delegata al VoiceEngine
     - Contatore token nel footer
@@ -284,10 +284,10 @@ def _render_ai_stream(event_gen) -> bool:
             err = str(event.payload)
             render_error_msg(err)
             if "raggiungibile" in err or "Ollama" in err:
-                render_system_msg("Verifica: ollama serve", ORANGE)
+                render_system_msg("Check: Ollama service must be running.", ORANGE)
             return True
 
-        # Evento non-AI durante lo stream (es. system_msg da tool)
+        # Non-AI event during stream (e.g. system_msg from tool)
         if not streaming:
             spinner.stop()
             streaming = True
@@ -304,7 +304,7 @@ def _render_ai_stream(event_gen) -> bool:
 def _render_event(event: UIEvent) -> bool:
     match event.kind:
         case "exit":
-            render_system_msg("Sistemi in spegnimento. Arrivederci.", RED)
+            render_system_msg("Shutting down systems. Goodbye.", RED)
             time.sleep(0.3)
             return False
         case "clear":
@@ -318,7 +318,7 @@ def _render_event(event: UIEvent) -> bool:
         case "banner_update":
             render_banner()
         case "system_msg":
-            # Supporta Markdown anche nei messaggi di sistema
+            # Supports Markdown even in system messages
             text = str(event.payload)
             config = get_config()
             if config.render_markdown and ("**" in text or "```" in text or "#" in text):
@@ -328,7 +328,7 @@ def _render_event(event: UIEvent) -> bool:
         case "message":
             render_jarvis_panel(str(event.payload))
         case _:
-            render_system_msg(f"Evento: {event.kind}", DIM_R)
+            render_system_msg(f"Event: {event.kind}", DIM_R)
     return True
 
 
@@ -371,7 +371,7 @@ def main():
         completer=completer,
         complete_while_typing=True,
         key_bindings=kb,
-        placeholder="Scrivi un messaggio… (Tab per comandi, Esc+Enter per multiriga)",
+        placeholder=t("input_hint"),
         multiline=False,
     )
 
@@ -379,7 +379,7 @@ def main():
         try:
             raw = session.prompt(HTML("<ansired><b>❯ </b></ansired>")).strip()
         except KeyboardInterrupt:
-            render_system_msg("Ctrl+C — usa /exit per uscire.", YELLOW)
+            render_system_msg("Ctrl+C — use /exit to quit.", YELLOW)
             continue
         except EOFError:
             break
@@ -408,8 +408,8 @@ def main():
 
         except Exception as e:
             log_error(f"CLI loop error: {e}", exc=e)
-            render_error_msg(f"Errore inatteso: {e}")
-            render_system_msg("Riprova o usa /help", ORANGE)
+            render_error_msg(f"Unexpected error: {e}")
+            render_system_msg("Try again or use /help", ORANGE)
 
     console.print(Rule(style="red"))
     console.print(Align.center(Text("JARVIS PRO OFFLINE", style=RED)))

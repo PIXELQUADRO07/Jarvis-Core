@@ -1,5 +1,5 @@
 """
-core/security.py — Sicurezza: crittografia AES memoria, validazione input, rate limiting.
+core/security.py — Security: AES memory encryption, input validation, rate limiting.
 """
 import re
 import time
@@ -12,7 +12,7 @@ from logger import debug, warning
 
 # ── Input Sanitization ───────────────────────────────────────────────────────
 
-# Pattern pericolosi da bloccare
+# Dangerous patterns to block
 _INJECTION_PATTERNS = [
     r"<script.*?>.*?</script>",
     r"javascript:",
@@ -30,8 +30,8 @@ _COMPILED = [re.compile(p, re.IGNORECASE | re.DOTALL) for p in _INJECTION_PATTER
 
 def sanitize_input(text: str) -> str:
     """
-    Sanifica l'input utente rimuovendo pattern pericolosi.
-    Non blocca il testo — lo pulisce e avvisa.
+    Sanitize user input by removing dangerous patterns.
+    Does not block text — it cleans and warns.
     """
     if not text:
         return text
@@ -42,7 +42,7 @@ def sanitize_input(text: str) -> str:
             warning(f"Security: injection pattern detected and removed")
             cleaned = pattern.sub("", cleaned)
 
-    # Limita lunghezza massima input (anti-DoS)
+    # Limit maximum input length to prevent DoS
     if len(cleaned) > 4096:
         warning("Security: input truncated (>4096 chars)")
         cleaned = cleaned[:4096]
@@ -51,7 +51,7 @@ def sanitize_input(text: str) -> str:
 
 
 def validate_url(url: str) -> bool:
-    """Verifica che sia un URL sicuro (no file://, no localhost per chiamate esterne)."""
+    """Verify the URL is safe (no file://, no localhost for external calls)."""
     url = url.lower().strip()
     if url.startswith("file://"):
         return False
@@ -63,7 +63,7 @@ def validate_url(url: str) -> bool:
 class RateLimiter:
     """
     Sliding window rate limiter thread-safe.
-    Default: 60 richieste / 60 secondi.
+    Default: 60 requests / 60 seconds.
     """
 
     def __init__(self, max_requests: int = 60, window_seconds: int = 60):
@@ -73,7 +73,7 @@ class RateLimiter:
         self._lock = threading.Lock()
 
     def allow(self) -> bool:
-        """Ritorna True se la richiesta è permessa, False se il limite è superato."""
+        """Return True if the request is allowed, False if the rate limit is exceeded."""
         now = time.monotonic()
         with self._lock:
             # Rimuovi timestamp fuori finestra
@@ -81,7 +81,7 @@ class RateLimiter:
                 self._timestamps.popleft()
 
             if len(self._timestamps) >= self.max_requests:
-                warning(f"RateLimit: {self.max_requests} richieste/{self.window}s superato")
+                warning(f"RateLimit: {self.max_requests} requests/{self.window}s exceeded")
                 return False
 
             self._timestamps.append(now)
@@ -103,7 +103,7 @@ class RateLimiter:
 # ── AES Memory Encryption ────────────────────────────────────────────────────
 
 def _load_or_create_key(key_file: str) -> bytes:
-    """Carica o genera una chiave AES-256."""
+    """Load or generate an AES-256 key."""
     path = Path(key_file)
     if path.exists():
         return path.read_bytes()
@@ -115,12 +115,12 @@ def _load_or_create_key(key_file: str) -> bytes:
         debug(f"Generated new encryption key: {key_file}")
         return key
     except ImportError:
-        warning("cryptography non installato — encryption disabilitata")
+        warning("cryptography not installed — encryption disabled")
         return b""
 
 
 def encrypt_text(text: str, key_file: str = ".jarvis_key") -> Optional[bytes]:
-    """Cifra testo con AES (Fernet). Ritorna None se crypto non disponibile."""
+    """Encrypt text with AES (Fernet). Returns None if crypto is unavailable."""
     try:
         from cryptography.fernet import Fernet  # type: ignore
         key = _load_or_create_key(key_file)
@@ -134,7 +134,7 @@ def encrypt_text(text: str, key_file: str = ".jarvis_key") -> Optional[bytes]:
 
 
 def decrypt_text(data: bytes, key_file: str = ".jarvis_key") -> Optional[str]:
-    """Decifra testo AES. Ritorna None su errore."""
+    """Decrypt AES text. Returns None on error."""
     try:
         from cryptography.fernet import Fernet  # type: ignore
         key = _load_or_create_key(key_file)

@@ -1,6 +1,6 @@
 """
-core/db.py — Persistenza conversazioni su SQLite
-Salva ogni messaggio con timestamp, sessione, modello, token usage.
+core/db.py — Conversation persistence using SQLite
+Stores each message with timestamp, session, model, token usage.
 """
 import sqlite3
 import json
@@ -11,7 +11,7 @@ from logger import debug, error
 
 
 class ConversationDB:
-    """Database SQLite per la storia completa delle conversazioni."""
+    """SQLite database for full conversation persistence."""
 
     def __init__(self, db_path: str = "db/jarvis.db"):
         Path(db_path).parent.mkdir(parents=True, exist_ok=True)
@@ -34,7 +34,7 @@ class ConversationDB:
                 model         TEXT,
                 prompt_tokens INTEGER DEFAULT 0,
                 reply_tokens  INTEGER DEFAULT 0,
-                language      TEXT    DEFAULT 'it',
+                language      TEXT    DEFAULT 'en',
                 created_at    TEXT    NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_session ON messages(session);
@@ -60,7 +60,7 @@ class ConversationDB:
         model: str = "",
         prompt_tokens: int = 0,
         reply_tokens: int = 0,
-        language: str = "it",
+        language: str = "en",
     ) -> int:
         now = datetime.now().isoformat()
         with self._conn() as c:
@@ -94,7 +94,7 @@ class ConversationDB:
         return [{"role": r["role"], "content": r["content"]} for r in reversed(rows)]
 
     def search(self, query: str, session: Optional[str] = None, limit: int = 10) -> List[Dict]:
-        """Ricerca full-text nelle conversazioni."""
+        """Full-text search across conversations."""
         with self._conn() as c:
             if session:
                 rows = c.execute(
@@ -111,19 +111,19 @@ class ConversationDB:
         return [dict(r) for r in rows]
 
     def export_session_markdown(self, session: str) -> str:
-        """Esporta una sessione in Markdown."""
+        """Export a session to Markdown."""
         msgs = self.load_session(session, limit=10000)
         if not msgs:
             return ""
-        lines = [f"# Conversazione JARVIS — sessione: {session}\n",
-                 f"**Esportato:** {datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n---\n"]
+        lines = [f"# JARVIS Conversation — session: {session}\n",
+                 f"**Exported:** {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n---\n"]
         for m in msgs:
-            label = "👤 **Tu**" if m["role"] == "user" else "🤖 **JARVIS**"
+            label = "👤 **You**" if m["role"] == "user" else "🤖 **JARVIS**"
             lines.append(f"### {label}\n\n{m['content']}\n\n")
         return "".join(lines)
 
     def cleanup_old_messages(self, days: int = 30) -> int:
-        """Elimina messaggi più vecchi di `days` giorni."""
+        """Delete messages older than `days` days."""
         cutoff = (datetime.now() - timedelta(days=days)).isoformat()
         with self._conn() as c:
             cur = c.execute("DELETE FROM messages WHERE created_at < ?", (cutoff,))

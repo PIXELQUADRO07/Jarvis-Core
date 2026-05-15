@@ -1,6 +1,6 @@
 """
-controller/jarvis_controller.py — Controller JARVIS PRO
-Unico punto di ingresso dalla UI. Gestisce sicurezza, rate limiting, notifiche, i18n.
+controller/jarvis_controller.py — JARVIS PRO controller
+Single entry point from the UI. Handles security, rate limiting, notifications, and i18n.
 """
 from __future__ import annotations
 from dataclasses import dataclass
@@ -31,11 +31,11 @@ def handle_input(raw: str) -> Generator[UIEvent, None, None]:
 
     config = get_config()
 
-    # ── Sicurezza: sanifica input ────────────────────────────────────────
+    # ── Security: sanitize input ────────────────────────────────────────
     if config.sanitize_input:
         raw = sanitize_input(raw)
         if not raw:
-            yield UIEvent("system_msg", "⚠️ Input non valido o rimosso per sicurezza.")
+            yield UIEvent("system_msg", "⚠️ Invalid input or removed for security.")
             return
 
     # ── Comandi slash ────────────────────────────────────────────────────
@@ -58,7 +58,7 @@ def handle_input(raw: str) -> Generator[UIEvent, None, None]:
             case "unknown":
                 yield UIEvent("system_msg", t("unknown_command", cmd=data))
             case _:
-                yield UIEvent("system_msg", f"Azione: {action}")
+                yield UIEvent("system_msg", f"Action: {action}")
         return
 
     # ── Rate limiting ────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ def handle_input(raw: str) -> Generator[UIEvent, None, None]:
         yield UIEvent("ai_error", str(e))
         get_notifier().error_alert(str(e))
     except TimeoutError:
-        yield UIEvent("ai_error", "Timeout — Ollama non risponde. Riprova.")
+        yield UIEvent("ai_error", "Timeout — Ollama is not responding. Please try again.")
     except Exception as e:
         yield UIEvent("ai_error", str(e))
         get_notifier().error_alert(str(e))

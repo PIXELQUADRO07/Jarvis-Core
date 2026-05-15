@@ -1,5 +1,5 @@
 """
-core/tools/web_search.py — Ricerca web via DuckDuckGo (nessuna API key necessaria).
+core/tools/web_search.py — Web search via DuckDuckGo (no API key required).
 """
 import json
 import re
@@ -64,14 +64,14 @@ def _ddg_search(query: str, max_results: int = 5) -> List[Dict]:
 
 def search_web(query: str, max_results: int = 3) -> Optional[str]:
     """
-    Cerca sul web e ritorna una risposta formattata.
-    Usato dal router per query non gestite da altri tool.
+    Search the web and return a formatted response.
+    Used by the router for queries not handled by other tools.
     """
     results = _ddg_search(query, max_results)
     if not results:
         return None
 
-    lines = [f"🔍 Risultati web per: **{query}**\n"]
+    lines = [f"🔍 Web results for: **{query}**\n"]
     for i, r in enumerate(results, 1):
         title   = r.get("title", "")[:80]
         snippet = r.get("snippet", "")[:200]

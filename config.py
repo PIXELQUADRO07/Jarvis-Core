@@ -1,6 +1,6 @@
 """
-config.py — Configurazione centralizzata JARVIS PRO
-Supporta JSON, YAML, variabili d'ambiente, e validazione.
+config.py — Centralized JARVIS PRO configuration
+Supports JSON, YAML, environment variables, and validation.
 """
 import os
 import json
@@ -14,7 +14,7 @@ YAML_CONFIG = Path("jarvis_config.yaml")
 
 @dataclass
 class JarvisConfig:
-    """Configurazione completa JARVIS PRO"""
+    """Full JARVIS PRO configuration."""
 
     # ── LLM ───────────────────────────────────────
     ollama_url: str = "http://localhost:11434/api/chat"
@@ -36,9 +36,9 @@ class JarvisConfig:
     render_markdown: bool = True
     show_token_count: bool = True
 
-    # ── Voce ──────────────────────────────────────
+    # ── Voice ──────────────────────────────────────
     enable_voice: bool = False
-    voice_model: str = "voices/it_IT-riccardo-x_low.onnx"
+    voice_model: str = "en_US-ryan-high.onnx"
     voice_volume: float = 0.8
     voice_length_scale: float = 0.95
     voice_sentence_silence: float = 0.05
@@ -52,7 +52,7 @@ class JarvisConfig:
     enable_web_search: bool = True
     weather_cache_ttl: int = 3600
 
-    # ── Sicurezza ─────────────────────────────────
+    # ── Security ─────────────────────────────────
     encrypt_memory: bool = False
     encryption_key_file: str = ".jarvis_key"
     rate_limit_requests: int = 60
@@ -67,19 +67,19 @@ class JarvisConfig:
     enable_web_ui: bool = False
     web_port: int = 7860
 
-    # ── Plugin ────────────────────────────────────
+    # ── Plugins ────────────────────────────────────
     enable_plugins: bool = True
     plugins_dir: str = "plugins"
 
-    # ── Notifiche ─────────────────────────────────
+    # ── Notifications ───────────────────────────────
     enable_notifications: bool = False
     notification_level: str = "important"
 
-    # ── Lingua ────────────────────────────────────
-    language: str = "it"
+    # ── Language ───────────────────────────────────
+    language: str = "en"
     languages_supported: list = field(default_factory=lambda: ["it", "en", "es", "fr", "de"])
 
-    # ── Modalità silenziosa ───────────────────────
+    # ── Silent mode ───────────────────────────────
     silent_mode: bool = False
     silent_max_words: int = 20
 
@@ -138,21 +138,21 @@ class JarvisConfig:
         return config
 
     def _validate(self):
-        """Validazione configurazione"""
-        assert 0.0 <= self.temperature <= 2.0, "temperature deve essere 0-2"
+        """Validate configuration."""
+        assert 0.0 <= self.temperature <= 2.0, "temperature must be 0-2"
         assert 1 <= self.max_history_messages <= 10000
         assert self.request_timeout >= 5
         assert self.rate_limit_requests >= 1
         if self.language not in self.languages_supported:
-            self.language = "it"
+            self.language = "en"
 
     def save(self):
-        """Salva configurazione JSON"""
+        """Save configuration to JSON."""
         data = asdict(self)
         CONFIG_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False))
 
     def save_yaml(self):
-        """Salva configurazione YAML"""
+        """Save configuration to YAML."""
         try:
             import yaml  # type: ignore
             YAML_CONFIG.write_text(yaml.dump(asdict(self), default_flow_style=False, allow_unicode=True))

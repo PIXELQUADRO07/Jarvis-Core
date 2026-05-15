@@ -5,7 +5,7 @@ from logger import debug, error
 
 
 def synthesize(text: str, output_path: str) -> bool:
-    """Genera un file WAV usando Piper."""
+    """Generate a WAV file using Piper."""
     config = get_config()
     model = config.voice_model
     cmd = [
@@ -30,8 +30,8 @@ def synthesize(text: str, output_path: str) -> bool:
             return False
         return True
     except subprocess.TimeoutExpired:
-        error("Timeout durante la sintesi Piper")
+        error("Piper synthesis timeout")
         return False
     except Exception as e:
-        error(f"Errore durante la sintesi Piper: {e}")
+        error(f"Piper synthesis error: {e}")
         return False

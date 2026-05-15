@@ -1,21 +1,21 @@
 """
-core/plugin_manager.py — Sistema plugin auto-caricante.
+core/plugin_manager.py — Auto-loading plugin system.
 
-Come creare un plugin:
-  1. Crea un file in plugins/mio_plugin.py
-  2. Definisci una classe che eredita da PluginBase
-  3. Implementa `name`, `description`, `can_handle(query)`, `handle(query)`
-  4. Il plugin viene caricato automaticamente all'avvio
+How to create a plugin:
+  1. Create a file in plugins/my_plugin.py
+  2. Define a class that inherits from PluginBase
+  3. Implement `name`, `description`, `can_handle(query)`, `handle(query)`
+  4. The plugin is loaded automatically at startup
 
-Esempio (plugins/hello.py):
+Example (plugins/hello.py):
     from core.plugin_manager import PluginBase
     class HelloPlugin(PluginBase):
         name = "hello"
-        description = "Risponde ai saluti"
+        description = "Replies to greetings"
         def can_handle(self, query):
-            return "ciao" in query.lower()
+            return "hello" in query.lower()
         def handle(self, query):
-            return "Ciao! Come posso aiutarti?"
+            return "Hello! How can I assist you?"
 """
 
 import importlib
@@ -28,7 +28,7 @@ from logger import debug, error, warning
 
 
 class PluginBase:
-    """Classe base per tutti i plugin."""
+    """Base class for all plugins."""
 
     name: str = "base"
     description: str = ""
@@ -37,27 +37,24 @@ class PluginBase:
     enabled: bool = True
 
     def can_handle(self, query: str) -> bool:
-        """Ritorna True se il plugin può gestire la query."""
+        """Return True if the plugin can handle the query."""
         return False
 
     def handle(self, query: str) -> Optional[str]:
-        """
-        Gestisce la query e ritorna una risposta stringa,
-        oppure None per passare al LLM.
-        """
+        """Handle the query and return a string response, or None to pass to the LLM."""
         return None
 
     def on_load(self):
-        """Chiamato al caricamento del plugin."""
+        """Called when the plugin is loaded."""
         pass
 
     def on_unload(self):
-        """Chiamato allo scaricamento del plugin."""
+        """Called when the plugin is unloaded."""
         pass
 
 
 class PluginManager:
-    """Carica e gestisce i plugin dalla cartella plugins/."""
+    """Loads and manages plugins from the plugins/ folder."""
 
     def __init__(self, plugins_dir: str = "plugins"):
         self.plugins_dir = Path(plugins_dir)
@@ -65,7 +62,7 @@ class PluginManager:
         self._registry: Dict[str, PluginBase] = {}
 
     def load_all(self) -> int:
-        """Carica tutti i plugin dalla directory. Ritorna il numero caricato."""
+        """Load all plugins from the directory. Returns the number loaded."""
         if not self.plugins_dir.exists():
             self.plugins_dir.mkdir(parents=True)
             debug(f"Created plugins directory: {self.plugins_dir}")
@@ -85,7 +82,7 @@ class PluginManager:
         return loaded
 
     def _load_file(self, path: Path):
-        """Carica un singolo file plugin."""
+        """Load a single plugin file."""
         module_name = f"plugins.{path.stem}"
         spec = importlib.util.spec_from_file_location(module_name, path)
         module = importlib.util.module_from_spec(spec)
@@ -103,9 +100,8 @@ class PluginManager:
                 debug(f"Plugin loaded: {cls.name} v{cls.version}")
 
     def route(self, query: str) -> Optional[str]:
-        """
-        Prova ogni plugin in ordine.
-        Ritorna la prima risposta non None, o None se nessun plugin gestisce.
+        """Try each plugin in order.
+        Returns the first non-None response, or None if no plugin handles the query.
         """
         for plugin in self._plugins:
             if not plugin.enabled:

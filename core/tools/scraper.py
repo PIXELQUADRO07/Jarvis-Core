@@ -6,7 +6,7 @@ from logger import debug, warning
 
 
 def scrape_title(url: str) -> str:
-    """Scrapa il titolo di una pagina HTML"""
+    """Scrape the title of an HTML page."""
     debug(f"Scraping title from {url[:60]}...")
     try:
         resp = requests.get(url, timeout=10, headers={"User-Agent": "jarvis-bot/1.0"})
@@ -17,23 +17,23 @@ def scrape_title(url: str) -> str:
         if title:
             title = title.strip()
             return f"📄 {title}"
-        return "❌ Nessun titolo trovato nella pagina."
+        return "❌ No title found on the page."
     except requests.exceptions.Timeout:
         warning(f"Scraping timeout for {url}")
-        return "❌ La pagina ha impiegato troppo tempo per rispondere."
+        return "❌ The page took too long to respond."
     except requests.exceptions.ConnectionError:
         warning(f"Scraping connection error for {url}")
-        return "❌ Impossibile raggiungere la pagina."
+        return "❌ Unable to reach the page."
     except requests.RequestException as e:
         warning(f"Scraping request error for {url}: {e}")
-        return "❌ Errore nel download della pagina."
+        return "❌ Error downloading the page."
     except Exception as e:
         warning(f"Scraping error for {url}: {e}")
-        return "❌ Errore nello scraping della pagina."
+        return "❌ Error scraping the page."
 
 
 def scrape_wikipedia_summary(title: str) -> str:
-    """Scrapa il primo paragrafo di Wikipedia italiano"""
+    """Scrape the first paragraph from an Italian Wikipedia page."""
     title = title.strip()
     if not title:
         return ""

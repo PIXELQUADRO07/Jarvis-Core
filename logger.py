@@ -1,5 +1,5 @@
 """
-logger.py — Logging strutturato JSON con rotazione automatica
+logger.py — Structured JSON logging with automatic rotation.
 """
 import json
 import logging
@@ -36,7 +36,7 @@ def _build_logger() -> logging.Logger:
 
     log_file = LOG_DIR / f"jarvis_{datetime.now().strftime('%Y%m%d')}.log"
 
-    # File handler JSON con rotazione (5 MB, 5 backup)
+    # JSON file handler with rotation (5 MB, 5 backups)
     fh = RotatingFileHandler(
         log_file, maxBytes=5 * 1024 * 1024, backupCount=5, encoding="utf-8"
     )

@@ -5,8 +5,8 @@ from logger import debug, warning
 
 
 def get_weather(city: str) -> str:
-    """Ottiene previsioni meteo da wttr.in"""
-    city = city.strip() or "Napoli"
+    """Get weather forecasts from wttr.in."""
+    city = city.strip() or "Naples"
     cache_key = f"weather:{city.lower()}"
     cached = cache_get(cache_key)
     if cached:
@@ -26,29 +26,29 @@ def get_weather(city: str) -> str:
         local_time = current.get('localObsDateTime', 'N/A')
         area = data.get('nearest_area', [{}])[0].get('areaName', [{}])[0].get('value', city.title())
         
-        text = f"🌍 {area}: {desc}, {temp}°C, ora locale {local_time}"
+        text = f"🌍 {area}: {desc}, {temp}°C, local time {local_time}"
         set_cache(cache_key, text)
         return text
     except requests.exceptions.Timeout:
         warning(f"Weather timeout for {city}")
-        return f"❌ Il servizio meteo sta impiegando troppo tempo per {city}."
+        return f"❌ The weather service is taking too long for {city}."
     except requests.exceptions.ConnectionError:
         warning(f"Weather connection error for {city}")
-        return f"❌ Impossibile raggiungere il servizio meteo per {city}."
+        return f"❌ Unable to reach the weather service for {city}."
     except (KeyError, IndexError, ValueError) as e:
         warning(f"Weather parsing error for {city}: {e}")
         stale = cache_get(cache_key, ttl=None)
         if stale:
-            return f"{stale} (dati memorizzati)"
-        return f"❌ Impossibile ottenere il meteo per {city}. Prova con un'altra città."
+            return f"{stale} (cached data)"
+        return f"❌ Unable to get weather for {city}. Try another city."
     except Exception as e:
         warning(f"Unexpected weather error for {city}: {e}")
-        return "❌ Errore nel servizio meteo. Riprova più tardi."
+        return "❌ Weather service error. Please try again later."
 
 
 def get_time(city: str) -> str:
-    """Ottiene l'ora locale di una città"""
-    city = city.strip() or "Napoli"
+    """Get the local time for a city."""
+    city = city.strip() or "Naples"
     cache_key = f"time:{city.lower()}"
     cached = cache_get(cache_key)
     if cached:
@@ -66,9 +66,9 @@ def get_time(city: str) -> str:
         local_time = current.get('localObsDateTime', 'N/A')
         area = data.get('nearest_area', [{}])[0].get('areaName', [{}])[0].get('value', city.title())
         
-        text = f"🕐 In {area} sono le {local_time}"
+        text = f"🕐 Local time in {area} is {local_time}"
         set_cache(cache_key, text)
         return text
     except Exception as e:
         warning(f"Time fetch error for {city}: {e}")
-        return f"❌ Impossibile ottenere l'ora per {city}."
+        return f"❌ Unable to get the time for {city}."

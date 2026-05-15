@@ -1,5 +1,5 @@
 """
-core/memory.py — Memoria conversazione con persistenza SQLite + opzione crittografia.
+core/memory.py — Conversation memory with SQLite persistence and optional encryption.
 """
 import json
 from pathlib import Path
@@ -13,7 +13,7 @@ from logger import debug, error
 
 
 def load_memory() -> List[Dict]:
-    """Carica la cronologia della sessione corrente da DB e/o file JSON."""
+    """Load the current session history from DB or fallback to JSON file."""
     config = get_config()
     session_mgr = get_session_manager()
     session_name = session_mgr.current_session.name if session_mgr.current_session else "default"
@@ -46,7 +46,7 @@ def load_memory() -> List[Dict]:
 
 
 def save_memory(history: List[Dict]) -> bool:
-    """Salva la cronologia in DB (con fallback su file JSON)."""
+    """Save history to the DB and fallback to JSON file if needed."""
     config = get_config()
     session_mgr = get_session_manager()
     session_name = session_mgr.current_session.name if session_mgr.current_session else "default"
@@ -55,10 +55,10 @@ def save_memory(history: List[Dict]) -> bool:
     if len(clean) > config.max_history_messages:
         clean = clean[-config.max_history_messages:]
 
-    # Salva su DB
+    # Save to DB
     try:
         db = get_db()
-        # Il DB accumula — salva solo l'ultimo messaggio (assistant) per non duplicare
+        # The DB accumulates data — save only the last assistant message to avoid duplication
         if clean and clean[-1]["role"] == "assistant":
             last = clean[-1]
             db.save_message(
@@ -73,10 +73,10 @@ def save_memory(history: List[Dict]) -> bool:
     except Exception as e:
         error(f"DB save failed: {e}")
 
-    # Salva anche su file JSON (compatibilità)
+    # Also save to JSON file for compatibility
     mem_file = Path(session_mgr.get_session_file())
     try:
-        # Crittografia opzionale
+        # Optional encryption
         if config.encrypt_memory:
             from core.security import encrypt_json_file
             encrypt_json_file(str(mem_file), clean, config.encryption_key_file)
@@ -91,7 +91,7 @@ def save_memory(history: List[Dict]) -> bool:
 
 
 def clear_memory() -> bool:
-    """Azzera la memoria della sessione corrente."""
+    """Clear the current session memory."""
     session_mgr = get_session_manager()
     mem_file = Path(session_mgr.get_session_file())
     try:
@@ -104,7 +104,7 @@ def clear_memory() -> bool:
 
 
 def get_memory_stats() -> Dict:
-    """Statistiche sulla memoria corrente."""
+    """Get statistics for the current session memory."""
     history = load_memory()
     user_msgs      = [m for m in history if m.get("role") == "user"]
     assistant_msgs = [m for m in history if m.get("role") == "assistant"]
@@ -127,7 +127,7 @@ def _filter_hallucinations(messages: List[Dict]) -> List[Dict]:
 
 
 def auto_cleanup_old_messages():
-    """Rimuove messaggi più vecchi di max_history_days dal DB."""
+    """Remove messages older than max_history_days from the DB."""
     config = get_config()
     try:
         db = get_db()

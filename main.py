@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 JARVIS PRO — Entry point
-Avvia: VoiceEngine, API server (opzionale), plugin manager, CLI.
+Starts: VoiceEngine, optional API server, plugin manager, CLI.
 """
 import sys
 import argparse
@@ -15,13 +15,13 @@ from logger import info, error
 
 def parse_args():
     p = argparse.ArgumentParser(description="JARVIS PRO — Local AI Assistant")
-    p.add_argument("--no-voice",   action="store_true", help="Disabilita voce")
-    p.add_argument("--api",        action="store_true", help="Avvia API server REST")
-    p.add_argument("--api-port",   type=int,            help="Porta API (default 8000)")
-    p.add_argument("--lang",       type=str,            help="Lingua: it|en|es|fr|de")
-    p.add_argument("--silent",     action="store_true", help="Modalità silenziosa")
-    p.add_argument("--no-plugins", action="store_true", help="Disabilita plugin")
-    p.add_argument("--cleanup",    action="store_true", help="Pulizia DB all'avvio ed esci")
+    p.add_argument("--no-voice",   action="store_true", help="Disable voice")
+    p.add_argument("--api",        action="store_true", help="Start REST API server")
+    p.add_argument("--api-port",   type=int,            help="API port (default 8000)")
+    p.add_argument("--lang",       type=str,            help="Language: it|en|es|fr|de")
+    p.add_argument("--silent",     action="store_true", help="Silent mode")
+    p.add_argument("--no-plugins", action="store_true", help="Disable plugins")
+    p.add_argument("--cleanup",    action="store_true", help="Clean up the database on startup and exit")
     return p.parse_args()
 
 
@@ -71,18 +71,18 @@ if __name__ == "__main__":
         engine.start()
         info("VoiceEngine started")
 
-    # ── API REST server ───────────────────────────────────────────────────
+    # ── REST API server ───────────────────────────────────────────────────
     if config.enable_api:
         try:
             from api.rest_api import run_api_server
             run_api_server()
             info(f"API server started on :{config.api_port}")
         except ImportError:
-            error("FastAPI non installato. pip install fastapi uvicorn")
+            error("FastAPI is not installed. Install it with pip install fastapi uvicorn")
         except Exception as e:
             error(f"API server error: {e}")
 
-    # ── Avvia DB (crea schema se non esiste) ──────────────────────────────
+    # ── Initialize DB (create schema if missing) ────────────────────────────
     try:
         from core.db import get_db
         get_db()
