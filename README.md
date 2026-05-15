@@ -1,3 +1,4 @@
+[Screencast_20260515_144732.webm](https://github.com/user-attachments/assets/8855cad6-1b1e-4ebd-93f1-ef6904674e11)
 # 🤖 JARVIS PRO — Local AI Assistant
 
 > A powerful, feature-rich local AI assistant powered by Ollama with advanced CLI, voice support, REST API, plugin system, and more.
