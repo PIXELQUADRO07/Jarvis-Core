@@ -361,7 +361,35 @@ def open_firefox(search: Optional[str] = None) -> str:
         return f"Unable to open Firefox: {exc}"
 
 
+def shell_exec(command: str, timeout: int = 30) -> str:
+    """Execute a shell command safely."""
+    try:
+        # Basic sanitization could be added here if needed
+        result = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=timeout
+        )
+        stdout = result.stdout
+        stderr = result.stderr
+
+        output = ""
+        if stdout:
+            output += f"STDOUT:\n{stdout}"
+        if stderr:
+            output += f"\nSTDERR:\n{stderr}"
+
+        return output or "(no output)"
+    except subprocess.TimeoutExpired:
+        return f"Command timed out after {timeout} seconds."
+    except Exception as e:
+        return f"Error executing command: {str(e)}"
+
+
 def system_command(query: str) -> Optional[str]:
+
     q = query.lower().strip()
 
     if any(phrase in q for phrase in ("che distro", "controlla distro", "mostra distro", "nome distro", "che sistema", "system info", "what distro")):
@@ -430,7 +458,12 @@ def system_command(query: str) -> Optional[str]:
             except Exception as exc:
                 return f"Unable to open {app}: {exc}"
 
+    if q.startswith("$ ") or q.startswith("run "):
+        cmd = query[1 if q.startswith("$") else 4:].strip()
+        return shell_exec(cmd)
+
     if any(phrase in q for phrase in ("cpu", "processori", "quanti cpu", "cpu info", "numero cpu", "quante cpu", "logical cpu", "cpu count")):
+
         try:
             result = subprocess.run(["nproc"], capture_output=True, text=True, check=True)
             num_cpu = result.stdout.strip()

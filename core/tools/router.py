@@ -34,7 +34,40 @@ def route_query(query: str) -> Optional[str]:
         except Exception:
             pass
 
+    # ── Code Interpreter ──────────────────────────────────────────────────
+    if "python" in q or "esegui" in q:
+        from core.tools.code_interpreter import handle_code_query
+        result = handle_code_query(query)
+        if result:
+            return result
+
+    # ── Git ───────────────────────────────────────────────────────────────
+
+    if "git" in q:
+        from core.tools.git_tool import handle_git_query
+        result = handle_git_query(query)
+        if result:
+            return result
+
+    # ── PDF ───────────────────────────────────────────────────────────────
+    if ".pdf" in q:
+        # Look for a path ending in .pdf
+        match = re.search(r'(/[^\s]+\.pdf)', query)
+        if not match:
+            match = re.search(r'([a-zA-Z0-9_\-./]+\.pdf)', query)
+
+        if match:
+            file_path = match.group(1)
+            from core.tools.pdf_tool import extract_pdf_text
+            # Simple check for page range in query
+            pages = None
+            page_match = re.search(r'pagine?\s+(\d+-\d+|\d+(?:,\d+)*)', q)
+            if page_match:
+                pages = page_match.group(1)
+            return extract_pdf_text(file_path, pages=pages)
+
     # ── Sistema ───────────────────────────────────────────────────────────
+
     if config.enable_system:
         from core.tools.system import system_command
         result = system_command(query)
