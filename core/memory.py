@@ -2,6 +2,7 @@
 core/memory.py — Conversation memory with SQLite persistence and optional encryption.
 """
 import json
+import re
 from pathlib import Path
 from typing import List, Dict
 from datetime import datetime
@@ -55,21 +56,26 @@ def save_memory(history: List[Dict]) -> bool:
     if len(clean) > config.max_history_messages:
         clean = clean[-config.max_history_messages:]
 
-    # Save to DB
+    # Save to DB — both turns, not just the assistant reply, so
+    # /history, /search, and session reload from DB aren't missing half
+    # the conversation. Only persist messages not already in the DB: we
+    # track how many we've saved for this session and only insert the
+    # tail that's new since the last save.
     try:
         db = get_db()
-        # The DB accumulates data — save only the last assistant message to avoid duplication
-        if clean and clean[-1]["role"] == "assistant":
-            last = clean[-1]
-            db.save_message(
-                session=session_name,
-                role=last["role"],
-                content=last["content"],
-                model=config.model,
-                language=config.language,
-            )
+        already_saved = session_mgr.current_session.message_count if session_mgr.current_session else 0
+        new_messages = clean[already_saved:] if already_saved < len(clean) else clean[-2:]
+        for m in new_messages:
+            if m.get("role") in ("user", "assistant") and m.get("content"):
+                db.save_message(
+                    session=session_name,
+                    role=m["role"],
+                    content=m["content"],
+                    model=config.model,
+                    language=config.language,
+                )
         session_mgr.update_session_stats(len(clean))
-        debug(f"Memory saved to DB: {len(clean)} msgs (session={session_name})")
+        debug(f"Memory saved to DB: {len(new_messages)} new msgs (session={session_name})")
     except Exception as e:
         error(f"DB save failed: {e}")
 
@@ -91,16 +97,28 @@ def save_memory(history: List[Dict]) -> bool:
 
 
 def clear_memory() -> bool:
-    """Clear the current session memory."""
+    """Clear the current session memory (both the JSON file and the DB —
+    load_memory() checks the DB first, so clearing only the file left
+    old messages resurfacing on the next load)."""
     session_mgr = get_session_manager()
+    session_name = session_mgr.current_session.name if session_mgr.current_session else "default"
     mem_file = Path(session_mgr.get_session_file())
+    ok = True
     try:
         mem_file.write_text(json.dumps([], indent=2), encoding="utf-8")
-        debug("Memory cleared")
-        return True
     except Exception as e:
-        error(f"Clear memory failed: {e}")
-        return False
+        error(f"Clear memory (file) failed: {e}")
+        ok = False
+    try:
+        db = get_db()
+        db.clear_session(session_name)
+        session_mgr.update_session_stats(0)
+    except Exception as e:
+        error(f"Clear memory (DB) failed: {e}")
+        ok = False
+    if ok:
+        debug("Memory cleared (file + DB)")
+    return ok
 
 
 def get_memory_stats() -> Dict:
@@ -119,11 +137,31 @@ def get_memory_stats() -> Dict:
 
 
 def _filter_hallucinations(messages: List[Dict]) -> List[Dict]:
-    BAD = {"BERT", "Transformer", "GPT", "qwen", "ollama"}
-    return [
-        m for m in messages
-        if isinstance(m, dict) and not any(x in m.get("content", "") for x in BAD)
-    ]
+    """Drop known hallucinated boilerplate the model sometimes emits
+    (self-identification as BERT/GPT/etc. instead of answering).
+
+    The previous version deleted ANY message merely *containing* the
+    substrings "BERT", "GPT", "qwen", "ollama" — which silently wiped
+    out entirely legitimate messages like "what's the difference between
+    GPT and BERT?" or "which Ollama model are you using?". This now only
+    drops assistant messages that are hallucinated self-identification
+    (short, and essentially just naming a model), never user messages
+    and never substantive answers that happen to mention these terms.
+    """
+    _SELF_ID_RE = re.compile(
+        r"^\s*i\s*('m|am)\s*(a\s*)?(bert|gpt(-?\d)?|transformer)\b.{0,40}$",
+        re.IGNORECASE,
+    )
+    cleaned = []
+    for m in messages:
+        if not isinstance(m, dict):
+            continue
+        content = m.get("content", "")
+        if m.get("role") == "assistant" and len(content) < 120 and _SELF_ID_RE.match(content):
+            debug(f"Filtered hallucinated self-identification: {content[:60]!r}")
+            continue
+        cleaned.append(m)
+    return cleaned
 
 
 def auto_cleanup_old_messages():
