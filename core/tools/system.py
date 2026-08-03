@@ -1,13 +1,31 @@
 import os
 import platform
+import re
+import shlex
 import subprocess
 import webbrowser
 from pathlib import Path
 from typing import Optional
 from urllib.parse import quote_plus
 
+from logger import warning
 
 OS_RELEASE = Path("/etc/os-release")
+
+# Package/service/hostname names must match this to be passed to a shell
+# package manager. This blocks shell metacharacters (`;`, `&&`, `|`, `$()`,
+# backticks, quotes, whitespace...) that would otherwise let a chat message
+# break out of the intended argument and run arbitrary commands.
+_SAFE_NAME_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9+._@-]{0,127}$")
+
+
+def _validate_safe_name(value: str, kind: str = "name") -> Optional[str]:
+    """Return the value if it looks like a single safe token, else None."""
+    value = value.strip()
+    if not value or not _SAFE_NAME_RE.match(value):
+        warning(f"Rejected unsafe {kind}: {value!r}")
+        return None
+    return value
 
 
 def detect_distro() -> str:
@@ -36,29 +54,47 @@ def get_system_info() -> str:
     return f"{header}\n{status}"
 
 
+def _run_argv_sequence(commands: list, timeout: int) -> str:
+    """Run a sequence of argv lists (no shell, so no injection surface),
+    stopping and reporting on the first failure."""
+    outputs = []
+    for argv in commands:
+        try:
+            result = subprocess.run(argv, shell=False, capture_output=True, text=True, timeout=timeout)
+        except FileNotFoundError:
+            return f"Command not found: {argv[0]}"
+        except subprocess.TimeoutExpired:
+            return f"Command timed out: {' '.join(argv)}"
+        outputs.append(result.stdout.strip())
+        if result.returncode != 0:
+            return f"Command failed ({' '.join(argv)}):\n{(result.stderr or result.stdout).strip()}"
+    return "\n".join(o for o in outputs if o) or "(no output)"
+
+
 def update_system() -> str:
+    from config import get_config
+    if not get_config().enable_package_management:
+        return ("System updates are disabled. Set enable_package_management: true "
+                "in jarvis_config.json (or JARVIS_ENABLE_PACKAGE_MANAGEMENT=true) "
+                "to allow JARVIS to manage packages.")
+
     distro = detect_distro().lower()
     if not _is_root():
         return "System updates are blocked: run JARVIS as root or use sudo."
 
     if "arch" in distro or "manjaro" in distro:
-        cmd = "pacman -Syu --noconfirm"
+        commands = [["pacman", "-Syu", "--noconfirm"]]
     elif any(d in distro for d in ("ubuntu", "debian", "linux mint", "popos")):
-        cmd = "apt update && apt upgrade -y"
+        commands = [["apt", "update"], ["apt", "upgrade", "-y"]]
     elif "fedora" in distro:
-        cmd = "dnf upgrade --refresh -y"
+        commands = [["dnf", "upgrade", "--refresh", "-y"]]
     elif any(d in distro for d in ("opensuse", "suse")):
-        cmd = "zypper refresh && zypper update -y"
+        commands = [["zypper", "refresh"], ["zypper", "update", "-y"]]
     else:
         return f"Unknown distribution for automatic updates: {distro}."
 
     try:
-        result = subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True, timeout=1200)
-        return f"Update completed.\n{result.stdout.strip()[:2000]}"
-    except subprocess.CalledProcessError as exc:
-        return f"System update failed:\n{exc.stderr.strip() or exc.stdout.strip()}"
-    except subprocess.TimeoutExpired:
-        return "The update is taking too long and timed out."
+        return f"Update completed.\n{_run_argv_sequence(commands, timeout=1200)[:2000]}"
     except Exception as exc:
         return f"Unable to perform update: {exc}"
 
@@ -221,59 +257,67 @@ def get_battery_info() -> str:
 
 
 def install_package(package: str) -> str:
-    """Install a package (requires root)."""
+    """Install a package (requires root + explicit opt-in + a safe package name)."""
+    from config import get_config
+    if not get_config().enable_package_management:
+        return ("Package management is disabled. Set enable_package_management: true "
+                "in jarvis_config.json to allow JARVIS to install/remove packages.")
     if not _is_root():
         return "Package installation requires root privileges."
 
+    safe_pkg = _validate_safe_name(package, kind="package name")
+    if safe_pkg is None:
+        return f"Refused: '{package}' is not a valid package name."
+
     distro = detect_distro().lower()
     if "arch" in distro or "manjaro" in distro:
-        cmd = f"pacman -S --noconfirm {package}"
+        commands = [["pacman", "-S", "--noconfirm", safe_pkg]]
     elif any(d in distro for d in ("ubuntu", "debian", "linux mint", "popos")):
-        cmd = f"apt update && apt install -y {package}"
+        commands = [["apt", "update"], ["apt", "install", "-y", safe_pkg]]
     elif "fedora" in distro:
-        cmd = f"dnf install -y {package}"
+        commands = [["dnf", "install", "-y", safe_pkg]]
     elif any(d in distro for d in ("opensuse", "suse")):
-        cmd = f"zypper install -y {package}"
+        commands = [["zypper", "install", "-y", safe_pkg]]
     else:
         return f"Package installation not supported for: {distro}"
 
     try:
-        subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True, timeout=300)
-        return f"Package '{package}' installed successfully."
-    except subprocess.CalledProcessError as exc:
-        return f"Failed to install '{package}': {exc.stderr.strip() or exc.stdout.strip()}"
-    except subprocess.TimeoutExpired:
-        return f"Installation of '{package}' timed out."
+        _run_argv_sequence(commands, timeout=300)
+        return f"Package '{safe_pkg}' installed successfully."
     except Exception as exc:
-        return f"Unable to install '{package}': {exc}"
+        return f"Unable to install '{safe_pkg}': {exc}"
 
 
 def remove_package(package: str) -> str:
-    """Remove a package (requires root)."""
+    """Remove a package (requires root + explicit opt-in + a safe package name)."""
+    from config import get_config
+    if not get_config().enable_package_management:
+        return ("Package management is disabled. Set enable_package_management: true "
+                "in jarvis_config.json to allow JARVIS to install/remove packages.")
     if not _is_root():
         return "Package removal requires root privileges."
 
+    safe_pkg = _validate_safe_name(package, kind="package name")
+    if safe_pkg is None:
+        return f"Refused: '{package}' is not a valid package name."
+
     distro = detect_distro().lower()
     if "arch" in distro or "manjaro" in distro:
-        cmd = f"pacman -R --noconfirm {package}"
+        commands = [["pacman", "-R", "--noconfirm", safe_pkg]]
     elif any(d in distro for d in ("ubuntu", "debian", "linux mint", "popos")):
-        cmd = f"apt remove -y {package}"
+        commands = [["apt", "remove", "-y", safe_pkg]]
     elif "fedora" in distro:
-        cmd = f"dnf remove -y {package}"
+        commands = [["dnf", "remove", "-y", safe_pkg]]
     elif any(d in distro for d in ("opensuse", "suse")):
-        cmd = f"zypper remove -y {package}"
+        commands = [["zypper", "remove", "-y", safe_pkg]]
     else:
         return f"Package removal not supported for: {distro}"
 
     try:
-        subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True, timeout=300)
-        return f"Package '{package}' removed successfully."
-    except subprocess.CalledProcessError as exc:
-        return f"Failed to remove '{package}': {exc.stderr.strip() or exc.stdout.strip()}"
-    except subprocess.TimeoutExpired:
-        return f"Removal of '{package}' timed out."
+        _run_argv_sequence(commands, timeout=300)
+        return f"Package '{safe_pkg}' removed successfully."
     except Exception as exc:
-        return f"Unable to remove '{package}': {exc}"
+        return f"Unable to remove '{safe_pkg}': {exc}"
 
 
 def manage_service(action: str, service: str) -> str:
@@ -362,26 +406,45 @@ def open_firefox(search: Optional[str] = None) -> str:
 
 
 def shell_exec(command: str, timeout: int = 30) -> str:
-    """Execute a shell command safely."""
+    """Execute a shell-like command — OFF by default.
+
+    This is the single most dangerous tool in JARVIS: it lets whoever is
+    chatting with the assistant (or a plugin, or a prompt-injected web
+    page it summarized) run commands on your machine. It is disabled
+    unless the person running JARVIS explicitly opts in.
+
+    Even when enabled, it never uses shell=True: the command is tokenized
+    with shlex and executed as an argv list, so shell metacharacters like
+    `;`, `&&`, `|`, backticks or `$()` are NOT interpreted — they're just
+    inert characters in an argument, which closes the classic injection
+    vector. It can still run whatever single program you name, so this is
+    risk reduction, not a sandbox — see the code interpreter's isolation
+    notes for what real isolation looks like.
+    """
+    from config import get_config
+    if not get_config().enable_shell_exec:
+        return ("Shell execution is disabled. Set enable_shell_exec: true in "
+                "jarvis_config.json (or JARVIS_ENABLE_SHELL_EXEC=true) to enable it "
+                "— only do this if you understand it gives whoever talks to JARVIS "
+                "the ability to run commands as you.")
+
     try:
-        # Basic sanitization could be added here if needed
-        result = subprocess.run(
-            command,
-            shell=True,
-            capture_output=True,
-            text=True,
-            timeout=timeout
-        )
-        stdout = result.stdout
-        stderr = result.stderr
+        argv = shlex.split(command)
+    except ValueError as e:
+        return f"Could not parse command: {e}"
+    if not argv:
+        return "No command provided."
 
+    try:
+        result = subprocess.run(argv, shell=False, capture_output=True, text=True, timeout=timeout)
         output = ""
-        if stdout:
-            output += f"STDOUT:\n{stdout}"
-        if stderr:
-            output += f"\nSTDERR:\n{stderr}"
-
+        if result.stdout:
+            output += f"STDOUT:\n{result.stdout}"
+        if result.stderr:
+            output += f"\nSTDERR:\n{result.stderr}"
         return output or "(no output)"
+    except FileNotFoundError:
+        return f"Command not found: {argv[0]}"
     except subprocess.TimeoutExpired:
         return f"Command timed out after {timeout} seconds."
     except Exception as e:
