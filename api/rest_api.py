@@ -16,7 +16,7 @@ Launch:
 from __future__ import annotations
 
 try:
-    from fastapi import FastAPI, HTTPException, Depends, Header  # type: ignore
+    from fastapi import FastAPI, HTTPException, Depends, Header, Request  # type: ignore
     from fastapi.middleware.cors import CORSMiddleware              # type: ignore
     from fastapi.responses import StreamingResponse, JSONResponse   # type: ignore
     from pydantic import BaseModel                                   # type: ignore
@@ -25,20 +25,24 @@ try:
 except ImportError:
     _FASTAPI_AVAILABLE = False
 
+import hmac
 import json
 import threading
 from typing import Optional, Generator
 
 from config import get_config
 from core.db import get_db
-from core.security import sanitize_input, get_rate_limiter
-from logger import info, error
+from core.security import sanitize_input, get_rate_limiter_registry
+from logger import info, error, warning
 
 
 def _check_api_key(x_api_key: Optional[str] = Header(None)):
     cfg = get_config()
-    if cfg.api_key and x_api_key != cfg.api_key:
-        raise HTTPException(status_code=401, detail="Invalid API key")
+    if cfg.api_key:
+        # Constant-time comparison — a naive `!=` leaks timing information
+        # an attacker can use to brute-force the key character by character.
+        if not x_api_key or not hmac.compare_digest(x_api_key, cfg.api_key):
+            raise HTTPException(status_code=401, detail="Invalid API key")
     return True
 
 
@@ -54,8 +58,13 @@ def create_app() -> "FastAPI":
 
     app.add_middleware(
         CORSMiddleware,
+        # allow_credentials=True with allow_origins=["*"] is a known-bad
+        # combination (browsers block it, and it signals "any site can
+        # make authenticated requests here" if a proxy doesn't). Since
+        # this API is meant for local/trusted integrations, disable
+        # credentialed cross-origin requests unless origins are pinned.
         allow_origins=["*"],
-        allow_credentials=True,
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -85,9 +94,14 @@ def create_app() -> "FastAPI":
         }
 
     @app.post("/chat")
-    def chat(req: ChatRequest, _auth=Depends(_check_api_key)):
-        limiter = get_rate_limiter()
-        if not limiter.allow():
+    def chat(req: ChatRequest, request: Request, _auth=Depends(_check_api_key),
+              x_api_key: Optional[str] = Header(None)):
+        cfg = get_config()
+        # Key by API key when one is configured (identifies the caller
+        # reliably); fall back to remote IP otherwise. Without this, a
+        # single noisy/malicious client exhausts the budget for everyone.
+        client_key = x_api_key or (request.client.host if request.client else "unknown")
+        if not get_rate_limiter_registry().allow(client_key):
             raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
         clean_msg = sanitize_input(req.message)
@@ -162,6 +176,12 @@ def run_api_server():
         return
 
     cfg = get_config()
+    if not cfg.api_key and cfg.api_host not in ("127.0.0.1", "localhost"):
+        warning(
+            f"JARVIS API is starting on {cfg.api_host}:{cfg.api_port} with NO api_key set. "
+            "Anyone who can reach this host can chat with your assistant and read its "
+            "history. Set 'api_key' in jarvis_config.json or bind to 127.0.0.1 instead."
+        )
     app = create_app()
 
     def _run():
