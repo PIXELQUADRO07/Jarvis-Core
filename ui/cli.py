@@ -242,42 +242,71 @@ def _render_ai_stream(event_gen) -> bool:
     last_meta     = {}
     streaming     = False
     config        = get_config()
+    live          = None  # rich.Live panel, created on first token
 
-    for event in event_gen:
+    def _panel_for(text: str, tokens: dict):
+        content = Markdown(text) if config.render_markdown else Text(text, style=BRRED)
+        footer = ""
+        if config.show_token_count and tokens:
+            p = tokens.get("prompt_tokens", 0)
+            c = tokens.get("completion_tokens", 0)
+            footer = f" [dim]● {p}+{c}={p + c} token[/]"
+        return Panel(
+            content,
+            title=f"[bold red]// JARVIS[/]{footer}",
+            title_align="left",
+            border_style="red",
+            padding=(0, 2),
+            box=box.HEAVY,
+        )
 
-        if event.kind == "user_msg":
-            render_user_panel(event.payload)
-            continue
+    try:
+        for event in event_gen:
 
-        if event.kind == "ai_chunk":
-            chunk, meta = event.payload
-            last_meta   = meta
+            if event.kind == "user_msg":
+                render_user_panel(event.payload)
+                continue
 
-            if not streaming:
+            if event.kind == "ai_chunk":
+                chunk, meta = event.payload
+                last_meta   = meta
+
+                if not streaming:
+                    spinner.stop()
+                    streaming = True
+                    live = Live(console=console, refresh_per_second=12, transient=True)
+                    live.start()
+
+                full_response += chunk
+                speech_buffer += chunk
+
+                # Render the text as it arrives, not just at the end.
+                if live is not None:
+                    live.update(_panel_for(full_response, last_meta))
+
+                # Estrai frasi per TTS in parallelo
+                while True:
+                    sentence, speech_buffer = pop_complete_sentence(speech_buffer)
+                    if not sentence:
+                        break
+                    if config.enable_voice:
+                        speak_text(sentence)
+                continue
+
+            if event.kind == "ai_done":
                 spinner.stop()
-                streaming = True
-
-            full_response += chunk
-            speech_buffer += chunk
-
-            # Estrai frasi per TTS in parallelo
-            while True:
-                sentence, speech_buffer = pop_complete_sentence(speech_buffer)
-                if not sentence:
-                    break
-                if config.enable_voice:
-                    speak_text(sentence)
-            continue
-
-        if event.kind == "ai_done":
-            spinner.stop()
-            # Residuo TTS
-            if speech_buffer.strip() and config.enable_voice:
-                speak_text(speech_buffer.strip())
-            # Render risposta completa
-            if full_response.strip():
-                render_jarvis_panel(full_response.strip(), last_meta)
-            return True
+                if live is not None:
+                    live.stop()
+                # Residuo TTS
+                if speech_buffer.strip() and config.enable_voice:
+                    speak_text(speech_buffer.strip())
+                # Render finale (persistente, non transient come il Live panel)
+                if full_response.strip():
+                    render_jarvis_panel(full_response.strip(), last_meta)
+                return True
+    finally:
+        if live is not None:
+            live.stop()
 
         if event.kind == "ai_error":
             spinner.stop()
