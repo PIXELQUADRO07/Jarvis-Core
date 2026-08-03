@@ -91,6 +91,14 @@ def stream_llm(text: str) -> Generator[Tuple[str, dict], None, None]:
     """
     Stream LLM response.
     Yields (chunk_str, metadata_dict).
+
+    When config.use_native_tool_calling is on, the model is given the
+    registered tool schemas (core/tools/registry.py) and can request tool
+    calls instead of answering directly. We execute those, feed the
+    results back, and let the model continue — up to
+    config.max_tool_call_rounds round trips — before streaming its final,
+    human-readable answer. Intermediate tool-call plumbing is not saved
+    to long-term memory; only the final Q&A pair is.
     """
     config  = get_config()
     history = load_memory()
@@ -100,59 +108,115 @@ def stream_llm(text: str) -> Generator[Tuple[str, dict], None, None]:
         text + "".join(m.get("content", "") for m in history), config.model
     )
 
-    payload = json.dumps({
-        "model":   config.model,
-        "messages":[get_system_prompt()] + history,
-        "stream":  True,
-        "options": {"temperature": config.temperature},
-    }).encode("utf-8")
+    tools = None
+    if config.use_native_tool_calling:
+        try:
+            from core.tools.registry import get_enabled_tools
+            tools = get_enabled_tools(config) or None
+        except Exception as e:
+            warning(f"Tool registry unavailable, continuing without tools: {e}")
 
-    req = urllib.request.Request(
-        config.ollama_url,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-
+    messages = [get_system_prompt()] + history
     full_reply = ""
-    debug(f"LLM stream → {config.ollama_url} model={config.model}")
+    tool_round = 0
+    debug(f"LLM stream → {config.ollama_url} model={config.model} tools={'on' if tools else 'off'}")
 
     try:
-        resp = ollama_call(lambda: urllib.request.urlopen(req, timeout=config.request_timeout))
+        while True:
+            payload_dict = {
+                "model":   config.model,
+                "messages": messages,
+                "stream":  True,
+                "options": {"temperature": config.temperature},
+            }
+            if tools:
+                payload_dict["tools"] = tools
 
-        for raw_line in resp:
-            raw_line = raw_line.strip()
-            if not raw_line:
-                continue
+            payload = json.dumps(payload_dict).encode("utf-8")
+            req = urllib.request.Request(
+                config.ollama_url,
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+
             try:
-                data = json.loads(raw_line)
-            except json.JSONDecodeError:
-                continue
+                resp = ollama_call(lambda: urllib.request.urlopen(req, timeout=config.request_timeout))
+            except urllib.error.HTTPError as e:
+                # Some Ollama versions / models reject an unknown `tools`
+                # field outright. Degrade to a normal, tool-less request
+                # once instead of failing the whole conversation.
+                if tools and e.code == 400:
+                    warning("Ollama rejected 'tools' (model/server may not support it) — retrying without tools")
+                    tools = None
+                    continue
+                raise
 
-            token = data.get("message", {}).get("content", "")
-            if not token:
-                continue
+            pending_tool_calls = []
+            ctkns = TokenCounter.estimate_tokens(full_reply, config.model)
 
-            # Response length limit
-            if len(full_reply) + len(token) >= config.max_response_length:
-                token = token[: config.max_response_length - len(full_reply)]
-                full_reply += token
+            for raw_line in resp:
+                raw_line = raw_line.strip()
+                if not raw_line:
+                    continue
+                try:
+                    data = json.loads(raw_line)
+                except json.JSONDecodeError:
+                    continue
+
+                message = data.get("message", {})
+                token = message.get("content", "") or ""
+                if message.get("tool_calls"):
+                    pending_tool_calls.extend(message["tool_calls"])
+
                 if token:
+                    if len(full_reply) + len(token) >= config.max_response_length:
+                        token = token[: config.max_response_length - len(full_reply)]
+                        full_reply += token
+                        if token:
+                            ctkns = TokenCounter.estimate_tokens(full_reply, config.model)
+                            yield token, {"prompt_tokens": prompt_tokens,
+                                          "completion_tokens": ctkns,
+                                          "total_tokens": prompt_tokens + ctkns}
+                        break
+
+                    full_reply += token
                     ctkns = TokenCounter.estimate_tokens(full_reply, config.model)
                     yield token, {"prompt_tokens": prompt_tokens,
                                   "completion_tokens": ctkns,
                                   "total_tokens": prompt_tokens + ctkns}
-                break
 
-            full_reply += token
-            ctkns = TokenCounter.estimate_tokens(full_reply, config.model)
-            yield token, {"prompt_tokens": prompt_tokens,
-                          "completion_tokens": ctkns,
-                          "total_tokens": prompt_tokens + ctkns}
+                if data.get("done"):
+                    debug(f"LLM round done: {len(full_reply)} chars, ~{ctkns} tokens, "
+                          f"tool_calls={len(pending_tool_calls)}")
+                    break
 
-            if data.get("done"):
-                debug(f"LLM done: {len(full_reply)} chars, ~{ctkns} tokens")
-                break
+            if pending_tool_calls and tool_round < config.max_tool_call_rounds:
+                tool_round += 1
+                from core.tools.registry import execute_tool_call
+                messages.append({"role": "assistant", "content": "", "tool_calls": pending_tool_calls})
+                for call in pending_tool_calls:
+                    fn = call.get("function", {})
+                    name = fn.get("name", "")
+                    args = fn.get("arguments", {})
+                    if isinstance(args, str):
+                        try:
+                            args = json.loads(args)
+                        except json.JSONDecodeError:
+                            args = {}
+                    result = execute_tool_call(name, args, config)
+                    messages.append({"role": "tool", "content": result, "name": name})
+                continue  # ask the model to continue with the tool results
+
+            if pending_tool_calls and tool_round >= config.max_tool_call_rounds:
+                warning(f"Hit max_tool_call_rounds ({config.max_tool_call_rounds}) — stopping tool loop")
+                if not full_reply:
+                    fallback = "I wasn't able to finish that after several tool calls — could you rephrase?"
+                    ctkns = TokenCounter.estimate_tokens(fallback, config.model)
+                    yield fallback, {"prompt_tokens": prompt_tokens, "completion_tokens": ctkns,
+                                      "total_tokens": prompt_tokens + ctkns}
+
+            break
 
     except CircuitBreakerOpen as e:
         error(f"Circuit breaker open: {e}")
