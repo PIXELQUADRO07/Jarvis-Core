@@ -75,3 +75,5 @@ voices/*.onnx.json
 .ipynb_checkpoints/
 *.ipynb
 en_US-ryan-high.onnx
+core/tools/cache.json
+jarvis_config.json
