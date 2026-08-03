@@ -1,5 +1,21 @@
 """
-core/tools/router.py — Query router with plugin, web search, and tool support.
+core/tools/router.py — Legacy keyword/regex query router.
+
+As of this version, this is the FALLBACK path only. The primary path is
+native LLM tool-calling (core/tools/registry.py + core/llm.py), used
+whenever config.use_native_tool_calling is True (the default): the model
+itself decides whether a tool is needed from the whole conversation,
+instead of this module guessing from substrings in isolation — which is
+what caused misroutes like "quanto fa 2+2 a Londra" matching the wrong
+tool.
+
+This module still runs when:
+  - use_native_tool_calling is explicitly disabled, or
+  - the configured model/Ollama version doesn't support tool calls
+    (core/llm.py falls back automatically on a 400 from Ollama).
+
+Kept intentionally rather than deleted, since not every local model
+supports function calling well.
 """
 import re
 from typing import Optional
