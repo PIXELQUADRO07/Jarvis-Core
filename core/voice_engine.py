@@ -74,6 +74,13 @@ class VoiceEngine:
                     continue
                 play_path = fx if (shutil.which("ffmpeg") and apply_ironman(raw, fx)) else raw
                 self._play(play_path)
+            except Exception as e:
+                # Defense in depth on top of the fixes in tts_piper.py /
+                # audio_fx.py: this is a daemon thread with nobody
+                # supervising it — one uncaught exception here used to
+                # kill it silently, going quiet for the rest of the
+                # session with no visible error.
+                error(f"VoiceEngine worker error (continuing): {e}")
             finally:
                 for p in {raw, fx}:
                     try:
