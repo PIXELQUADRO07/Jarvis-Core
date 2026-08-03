@@ -17,7 +17,7 @@ def test_config_defaults():
     cfg = JarvisConfig()
     assert cfg.temperature == 0.2
     assert cfg.max_history_messages == 100
-    assert cfg.language == "it"
+    assert cfg.language == "en"  # dataclass default; jarvis_config.json may override to "it"
     assert cfg.rate_limit_requests == 60
 
 
@@ -44,11 +44,21 @@ def test_sanitize_input_clean():
     assert sanitize_input("hello how are you?") == "hello how are you?"
 
 
-def test_sanitize_input_removes_script():
+def test_sanitize_input_does_not_mangle_legitimate_text():
+    # sanitize_input used to blacklist-strip words like "subprocess" out of
+    # ordinary chat text, silently corrupting legitimate messages. It now
+    # only normalizes (control chars, length) and leaves content alone —
+    # filtering belongs at the point where text becomes an action, not here.
     from core.security import sanitize_input
-    result = sanitize_input("<script>alert('xss')</script>text")
-    assert "<script>" not in result
-    assert "text" in result
+    text = "explain Python's subprocess module and how eval() differs from exec()"
+    assert sanitize_input(text) == text
+
+
+def test_sanitize_input_strips_control_chars():
+    from core.security import sanitize_input
+    result = sanitize_input("hello\x00\x07world")
+    assert "\x00" not in result and "\x07" not in result
+    assert "hello" in result and "world" in result
 
 
 def test_sanitize_input_truncates_long():
