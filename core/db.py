@@ -131,6 +131,20 @@ class ConversationDB:
         debug(f"DB cleanup: deleted {deleted} old messages (>{days} days)")
         return deleted
 
+    def clear_session(self, session: str) -> int:
+        """Delete all messages for a session (used by /clear). Resets
+        msg_count in sessions_meta rather than deleting the session row,
+        so the session itself still exists (just empty)."""
+        with self._conn() as c:
+            cur = c.execute("DELETE FROM messages WHERE session = ?", (session,))
+            deleted = cur.rowcount
+            c.execute(
+                "UPDATE sessions_meta SET msg_count = 0, updated_at = ? WHERE name = ?",
+                (datetime.now().isoformat(), session),
+            )
+        debug(f"DB cleared session={session}: {deleted} messages removed")
+        return deleted
+
     def get_stats(self, session: Optional[str] = None) -> Dict:
         with self._conn() as c:
             if session:
