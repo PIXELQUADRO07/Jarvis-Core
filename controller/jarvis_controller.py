@@ -73,14 +73,32 @@ def handle_input(raw: str) -> Generator[UIEvent, None, None]:
     set_status("thinking")
 
     try:
-        # Tool routing (meteo, wiki, plugin, web search...)
-        result = route_query(raw)
-        if result:
-            yield UIEvent("system_msg", result)
+        # Plugins are user-authored and not modeled as LLM tools, so they
+        # always get first look regardless of tool-calling mode.
+        plugin_result = None
+        if config.enable_plugins:
+            from core.plugin_manager import get_plugin_manager
+            plugin_result = get_plugin_manager().route(raw)
+
+        if plugin_result:
+            yield UIEvent("system_msg", plugin_result)
             if config.enable_voice:
-                speak_text(result)
-            get_notifier().jarvis_reply(result)
+                speak_text(plugin_result)
+            get_notifier().jarvis_reply(plugin_result)
             return
+
+        if not config.use_native_tool_calling:
+            # Legacy path: keyword/regex routing decides before the LLM
+            # ever sees the message (see core/tools/router.py).
+            result = route_query(raw)
+            if result:
+                yield UIEvent("system_msg", result)
+                if config.enable_voice:
+                    speak_text(result)
+                get_notifier().jarvis_reply(result)
+                return
+        # else: native tool-calling is on — stream_llm() gives the model
+        # the registered tools and lets it decide whether/which to call.
 
         # LLM streaming
         full_response = ""
