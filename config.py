@@ -51,6 +51,11 @@ class JarvisConfig:
     enable_system: bool = True
     enable_web_search: bool = True
     weather_cache_ttl: int = 3600
+    # Native LLM tool-calling (core/tools/registry.py) replaces the keyword
+    # router when the model supports it. Falls back to the regex router
+    # automatically if the model/Ollama version rejects the `tools` field.
+    use_native_tool_calling: bool = True
+    max_tool_call_rounds: int = 3
 
     # ── Security ─────────────────────────────────
     encrypt_memory: bool = False
@@ -58,6 +63,13 @@ class JarvisConfig:
     rate_limit_requests: int = 60
     rate_limit_window: int = 60
     sanitize_input: bool = True
+    # Dangerous shell/package tools are OFF by default — the person running
+    # JARVIS must explicitly opt in (env var, config file, or /config command).
+    enable_shell_exec: bool = False
+    enable_package_management: bool = False
+    require_encryption: bool = False  # if True, refuse to store memory unencrypted
+    code_exec_timeout: int = 10
+    code_exec_max_memory_mb: int = 256
 
     # ── Web / API ─────────────────────────────────
     enable_api: bool = False
@@ -133,6 +145,9 @@ class JarvisConfig:
         _env_str("JARVIS_API_KEY", "api_key")
         _env_bool("JARVIS_SILENT_MODE", "silent_mode")
         _env_str("JARVIS_LANGUAGE", "language")
+        _env_bool("JARVIS_ENABLE_SHELL_EXEC", "enable_shell_exec")
+        _env_bool("JARVIS_ENABLE_PACKAGE_MANAGEMENT", "enable_package_management")
+        _env_bool("JARVIS_REQUIRE_ENCRYPTION", "require_encryption")
 
         config._validate()
         return config
