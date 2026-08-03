@@ -271,6 +271,8 @@ def run_command(raw: str) -> dict:
         if sub == "on":
             config.enable_voice = True
             config.save()
+            ve.start()  # was previously only started at boot in main.py —
+                        # toggling on mid-session queued text with nobody consuming it
             return {"action": "message", "data": t("voice_on"), "system_event": "voice_enabled"}
         elif sub == "off":
             config.enable_voice = False
